@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Moon, Sun } from "lucide-react";
@@ -31,9 +32,17 @@ export function ThemeToggle() {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  // On the server and during the initial client render, we render a placeholder
+  // Render a disabled button placeholder on the server and on the initial client-side render.
+  // This prevents a hydration mismatch while keeping the UI layout consistent.
+  // The button is enabled and functional only after the component has mounted on the client.
   if (!mounted) {
-    return <div className="h-9 w-9" />;
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100" />
+        <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0" />
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+    );
   }
 
   return (
