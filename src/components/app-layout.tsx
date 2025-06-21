@@ -55,20 +55,20 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <Link href="/home" legacyBehavior passHref>
-                <SidebarMenuButton asChild isActive={pathname === "/home"}>
+              <SidebarMenuButton asChild isActive={pathname === "/home"}>
+                <Link href="/home">
                   <Home />
                   Home
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <Link href="/semesters" legacyBehavior passHref>
-                <SidebarMenuButton asChild isActive={pathname.startsWith("/semesters")}>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/semesters")}>
+                <Link href="/semesters">
                   <Book />
                   Notes
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarContent>
