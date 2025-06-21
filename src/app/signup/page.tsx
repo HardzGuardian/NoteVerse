@@ -35,7 +35,7 @@ export default function SignupPage() {
                 <Label htmlFor="confirm-password">Confirm Password</Label>
                 <Input id="confirm-password" type="password" required />
               </div>
-              <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
+              <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
                 <Link href="/home">Sign Up</Link>
               </Button>
             </form>
