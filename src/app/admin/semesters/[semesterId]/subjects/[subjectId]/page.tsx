@@ -2,17 +2,17 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { AppLayout } from "@/components/app-layout";
+import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { semesters as allSemesters } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
-export default function PDFsPage({ params }: { params: { semesterId: string; subjectId: string } }) {
+export default function AdminPDFsPage({ params }: { params: { semesterId: string; subjectId: string } }) {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
@@ -33,26 +33,37 @@ export default function PDFsPage({ params }: { params: { semesterId: string; sub
     });
   };
 
+  const handleDelete = (title: string) => {
+    toast({
+      variant: "destructive",
+      title: "Deleting...",
+      description: `Request to delete ${title} sent.`,
+    });
+  }
+
   if (!subject && !loading) {
     return (
-      <AppLayout pageTitle="Error">
+      <AdminLayout pageTitle="Error">
         <div className="text-center">
           <h2 className="text-2xl font-bold">Subject not found</h2>
           <Button asChild className="mt-4">
-            <Link href={`/semesters/${params.semesterId}`}>Go Back</Link>
+            <Link href={`/admin/semesters/${params.semesterId}`}>Go Back</Link>
           </Button>
         </div>
-      </AppLayout>
+      </AdminLayout>
     );
   }
 
   return (
-    <AppLayout pageTitle={subject?.name || "Loading..."}>
+    <AdminLayout pageTitle={subject?.name || "Loading..."}>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">PDF Notes</h2>
-          <p className="text-muted-foreground">All available notes for this subject.</p>
+          <h2 className="text-2xl font-bold tracking-tight">Manage PDF Notes</h2>
+          <p className="text-muted-foreground">Upload, download, or delete notes for this subject.</p>
         </div>
+        <Button className="bg-accent hover:bg-accent/90">
+          <PlusCircle className="mr-2 h-4 w-4" /> Upload PDF
+        </Button>
       </div>
 
       <Card>
@@ -92,6 +103,11 @@ export default function PDFsPage({ params }: { params: { semesterId: string; sub
                         <DropdownMenuItem onClick={() => handleDownload(pdf.title)}>
                           <Download className="mr-2 h-4 w-4" /> Download
                         </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            onClick={() => handleDelete(pdf.title)}
+                            className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -105,10 +121,13 @@ export default function PDFsPage({ params }: { params: { semesterId: string; sub
                     <FolderOpen className="h-12 w-12 text-muted-foreground" />
                 </div>
                 <h3 className="mt-4 text-lg font-semibold">No PDFs Available</h3>
-                <p className="text-muted-foreground">The admin hasn't uploaded any notes for this subject yet.</p>
+                <p className="text-muted-foreground">Upload the first PDF for this subject.</p>
+                <Button className="mt-4 bg-accent hover:bg-accent/90">
+                    <PlusCircle className="mr-2 h-4 w-4" /> Upload First PDF
+                </Button>
             </CardContent>
         )}
       </Card>
-    </AppLayout>
+    </AdminLayout>
   );
 }

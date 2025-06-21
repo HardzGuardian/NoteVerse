@@ -76,3 +76,5 @@ export const updateNote = {
     lastUpdated: "2023-09-15",
     isNew: true,
 }
+
+export const aboutContent = "NoteVerse is a revolutionary platform designed to streamline the academic lives of students. Our mission is to provide a centralized, easy-to-use system for accessing course notes, staying updated with important announcements, and managing academic materials efficiently. We believe that by simplifying access to information, we can empower students to achieve their academic goals with greater confidence and less stress. NoteVerse is more than just a notes app; it's a partner in your educational journey.";

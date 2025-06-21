@@ -5,10 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   Book,
   Home,
-  PanelLeft,
-  Settings,
   User,
-  Info
+  Settings,
+  LayoutDashboard,
+  BookCopy,
+  FileText,
+  Megaphone,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -34,12 +36,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 
-type AppLayoutProps = {
+type AdminLayoutProps = {
   children: React.ReactNode;
   pageTitle: string;
 };
 
-export function AppLayout({ children, pageTitle }: AppLayoutProps) {
+export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
   const pathname = usePathname();
 
   return (
@@ -50,32 +52,43 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
             <div className="bg-primary text-primary-foreground rounded-lg p-2">
               <Book className="size-5" />
             </div>
-            <span className="font-headline text-2xl">NoteVerse</span>
+            <div>
+                <span className="font-headline text-2xl">NoteVerse</span>
+                <div className="text-xs font-semibold uppercase text-primary">Admin</div>
+            </div>
           </div>
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === "/home"}>
-                <Link href="/home">
-                  <Home />
-                  Home
+              <SidebarMenuButton asChild isActive={pathname === "/admin"}>
+                <Link href="/admin">
+                  <LayoutDashboard />
+                  Dashboard
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith("/semesters")}>
-                <Link href="/semesters">
-                  <Book />
-                  Notes
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/semesters")}>
+                <Link href="/admin/semesters">
+                  <BookCopy />
+                  Manage Notes
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname.startsWith("/about")}>
-                <Link href="/about">
-                  <Info />
-                  About
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/update-note")}>
+                <Link href="/admin/update-note">
+                  <Megaphone />
+                  Manage Update
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/about")}>
+                <Link href="/admin/about">
+                  <FileText />
+                  Manage About
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -95,8 +108,8 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar>
-                  <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person avatar" />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage src="https://placehold.co/100x100.png" alt="Admin User" data-ai-hint="person avatar" />
+                  <AvatarFallback>A</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
@@ -105,14 +118,14 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
               <DropdownMenuSeparator />
               <DropdownMenuItem asChild>
                 <Link href="/profile">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
+                  <Settings className="mr-2 h-4 w-4" />
+                  <span>Settings</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

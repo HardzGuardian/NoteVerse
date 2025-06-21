@@ -4,16 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BookOpen, Edit, Bell } from "lucide-react";
+import { BookOpen, Bell } from "lucide-react";
 import { updateNote } from "@/lib/data";
 
 export default function HomePage() {
-  const [userRole, setUserRole] = useState<'admin' | 'user'>('user');
   const [showBadge, setShowBadge] = useState(updateNote.isNew);
 
   const handleUpdateNoteClick = () => {
@@ -30,7 +26,7 @@ export default function HomePage() {
               <AvatarFallback>U</AvatarFallback>
             </Avatar>
             <h2 className="font-headline text-3xl font-semibold">Welcome, Student!</h2>
-            <p className="text-muted-foreground mt-1">Role: {userRole}</p>
+            <p className="text-muted-foreground mt-1">Your central hub for course materials and updates.</p>
           </div>
           <div className="p-6 grid gap-6 sm:grid-cols-2">
             <Link href="/semesters">
@@ -49,7 +45,7 @@ export default function HomePage() {
               </Card>
             </Link>
             
-            <Card className={`${userRole === 'admin' ? 'hover:shadow-md hover:border-primary' : ''} transition-all duration-300 h-full flex flex-col`} onClick={handleUpdateNoteClick}>
+            <Card className="transition-all duration-300 h-full flex flex-col" onClick={handleUpdateNoteClick}>
                <CardHeader>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -64,35 +60,9 @@ export default function HomePage() {
               <CardContent className="flex-grow">
                 <p className="text-muted-foreground">{updateNote.text}</p>
               </CardContent>
-              {userRole === 'admin' && (
-                <div className="p-6 pt-0">
-                    <Button asChild className="w-full bg-accent hover:bg-accent/90">
-                        <Link href="/update-note"><Edit className="mr-2 h-4 w-4" /> Edit Note</Link>
-                    </Button>
-                </div>
-              )}
             </Card>
           </div>
         </Card>
-        
-        <Card className="mt-6 w-full max-w-4xl shadow-lg">
-            <CardHeader>
-                <CardTitle>Developer Controls</CardTitle>
-                <CardDescription>Toggle user role for demonstration purposes.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex items-center space-x-2">
-                    <Label htmlFor="role-switch">User</Label>
-                    <Switch
-                        id="role-switch"
-                        checked={userRole === 'admin'}
-                        onCheckedChange={(checked) => setUserRole(checked ? 'admin' : 'user')}
-                    />
-                    <Label htmlFor="role-switch">Admin</Label>
-                </div>
-            </CardContent>
-        </Card>
-
       </div>
     </AppLayout>
   );
