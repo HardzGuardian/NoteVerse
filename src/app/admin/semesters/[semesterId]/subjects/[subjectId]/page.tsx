@@ -111,9 +111,12 @@ export default function AdminPDFsPage() {
   const [pdfToDelete, setPdfToDelete] = useState<PDF | null>(null);
 
   useEffect(() => {
+    // In a real app, you would fetch this data from a database.
+    // For this mock, we simulate a network delay.
     const timer = setTimeout(() => {
       const currentSemester = allSemesters.find((s) => s.id === params.semesterId);
       const currentSubject = currentSemester?.subjects.find((sub) => sub.id === params.subjectId);
+      // Deep copy to prevent modifying the original data object
       setSubject(currentSubject ? JSON.parse(JSON.stringify(currentSubject)) : undefined);
       setLoading(false);
     }, 1000);
@@ -121,6 +124,7 @@ export default function AdminPDFsPage() {
   }, [params.semesterId, params.subjectId]);
   
   const handleDownload = (title: string) => {
+    // In a real app, this would trigger a file download from a blob storage URL.
     toast({
       title: "Downloading...",
       description: `${title} has started downloading.`,
@@ -133,6 +137,7 @@ export default function AdminPDFsPage() {
   };
   
   const handleUpdatePdf = () => {
+    // In a real app, this would be an API call to update the database.
     if (!pdfToEdit || !editedPdfTitle.trim() || !subject) {
         toast({ variant: "destructive", title: "Error", description: "File title cannot be empty." });
         return;
@@ -146,6 +151,7 @@ export default function AdminPDFsPage() {
   };
   
   const handleDeletePdf = () => {
+    // In a real app, this would be an API call to delete from the database and blob storage.
     if (!pdfToDelete || !subject) return;
     setSubject(prev => prev ? {
       ...prev,
@@ -162,6 +168,7 @@ export default function AdminPDFsPage() {
   };
 
   const handleUploadFile = () => {
+    // In a real app, this would upload the file to blob storage and save the URL to the database.
     if (!newFileData.title.trim() || !fileToUpload) {
       toast({ variant: "destructive", title: "Error", description: "Please provide a title and select a file." });
       return;

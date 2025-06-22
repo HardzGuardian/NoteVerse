@@ -23,6 +23,7 @@ export default function AdminLoginPage() {
   const [overlayOpacity, setOverlayOpacity] = useState(50);
 
   useEffect(() => {
+    // This effect runs on the client to safely access localStorage.
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setBackground(savedBg);
@@ -34,6 +35,7 @@ export default function AdminLoginPage() {
   }, []);
 
   const handleLogin = () => {
+    // This is a mock login. In a real app, you'd validate against a database.
     if (email === "sagarsalunkhe98@gmail.com" && password === "Hardz@1998") {
       router.push("/admin");
     } else {
@@ -77,7 +79,7 @@ export default function AdminLoginPage() {
                     <Label htmlFor="password">Password</Label>
                     {loginAttempts >= 2 && (
                       <Link
-                        href="#"
+                        href="/forgot-password"
                         className="ml-auto inline-block text-sm underline text-primary font-medium"
                       >
                         Forgot password?

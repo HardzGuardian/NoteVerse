@@ -27,6 +27,7 @@ export default function LoginPage() {
   const [overlayOpacity, setOverlayOpacity] = useState(50);
 
   useEffect(() => {
+    // This effect runs on the client to safely access localStorage.
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setBackground(savedBg);
@@ -39,7 +40,6 @@ export default function LoginPage() {
 
   const handleLogin = () => {
     // This is a mock login. In a real app, you'd validate against a database.
-    // For demonstration, we'll treat any other credentials as invalid.
     if (email === "student@example.com" && password === "password") {
       router.push("/home");
     } else {
@@ -53,6 +53,8 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = () => {
+      // In a real app, this would trigger the Firebase Google Auth popup.
+      // For this mock, we'll just log the user in.
       router.push("/home");
   }
 
@@ -104,7 +106,7 @@ export default function LoginPage() {
                     <Label htmlFor="password">Password</Label>
                     {loginAttempts >= 2 && (
                       <Link
-                        href="#"
+                        href="/forgot-password"
                         className="ml-auto inline-block text-sm underline text-primary font-medium"
                       >
                         Forgot password?
