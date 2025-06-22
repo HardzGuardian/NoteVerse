@@ -31,7 +31,7 @@ export default function AdminHomePage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">Add/edit semesters, subjects, and PDFs.</p>
+                  <p className="text-muted-foreground">Add/edit semesters, subjects, notes, and exams.</p>
                 </CardContent>
               </Card>
             </Link>
