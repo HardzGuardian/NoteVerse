@@ -58,8 +58,9 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
     
     const updateAvatarAndName = () => {
         const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
+        const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
         setAvatar(savedAvatar || currentUser.avatar);
-        setUserName(currentUser.name || currentUser.email.split('@')[0]);
+        setUserName(savedName || currentUser.name || currentUser.email.split('@')[0]);
     };
 
     updateAvatarAndName();

@@ -25,19 +25,21 @@ export default function UsersPage() {
         const shouldHideName = hideNamePreference ? JSON.parse(hideNamePreference) : true;
 
         const processedUsers = initialUsers.map(user => {
-        const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
-        let userIsHidden = user.displayNameHidden;
+            const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
+            const storedName = localStorage.getItem(`user-name-${user.id}`);
+            let userIsHidden = user.displayNameHidden;
 
-        // If this user is the one currently logged in, respect their privacy setting.
-        if (user.id === loggedInUserId) {
-            userIsHidden = shouldHideName;
-        }
-        
-        return { 
-            ...user, 
-            displayNameHidden: userIsHidden,
-            avatar: storedAvatar || user.avatar, // Override avatar if it exists in local storage
-        };
+            // If this user is the one currently logged in, respect their privacy setting.
+            if (user.id === loggedInUserId) {
+                userIsHidden = shouldHideName;
+            }
+            
+            return { 
+                ...user,
+                name: storedName || user.name,
+                displayNameHidden: userIsHidden,
+                avatar: storedAvatar || user.avatar, // Override avatar if it exists in local storage
+            };
         });
 
         setDisplayUsers(processedUsers);

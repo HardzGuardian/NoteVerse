@@ -25,7 +25,8 @@ export default function HomePage() {
 
     const updateUserData = () => {
       const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
-      const name = currentUser.name || currentUser.email.split('@')[0];
+      const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
+      const name = savedName || currentUser.name || currentUser.email.split('@')[0];
 
       setAvatar(savedAvatar || currentUser.avatar);
       setUserName(name);

@@ -40,8 +40,10 @@ export default function UserManagementPage() {
     const loadUsers = () => {
         const processedUsers = initialUsers.map(user => {
             const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
+            const storedName = localStorage.getItem(`user-name-${user.id}`);
             return {
                 ...user,
+                name: storedName || user.name,
                 avatar: storedAvatar || user.avatar,
             };
         });
@@ -78,6 +80,16 @@ export default function UserManagementPage() {
         return;
     }
 
+    localStorage.setItem(`user-name-${userToEdit.id}`, editedUserData.name);
+    // In a real app, we'd save the 'canChangeName' to the database.
+    // For this mock, we'll update the initialUsers array to simulate persistence across reloads on this page.
+    const userInMemory = initialUsers.find(u => u.id === userToEdit.id);
+    if(userInMemory) {
+      userInMemory.canChangeName = editedUserData.canChangeName;
+      userInMemory.name = editedUserData.name;
+      userInMemory.role = editedUserData.role;
+    }
+
     setUsers(users.map(u => 
         u.id === userToEdit.id 
         ? { ...u, 
@@ -87,6 +99,11 @@ export default function UserManagementPage() {
           } 
         : u
     ));
+    
+    // Notify other components if the currently logged-in student user was edited by the admin
+    if (userToEdit.id === 'usr2') {
+        window.dispatchEvent(new Event('avatar-updated'));
+    }
 
     toast({
       title: "User Updated",

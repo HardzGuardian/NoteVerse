@@ -17,7 +17,7 @@ const currentUser = users.find(u => u.id === loggedInUserId);
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const [name, setName] = useState(currentUser ? (currentUser.name || currentUser.email.split('@')[0]) : "");
+  const [name, setName] = useState("");
   const [avatar, setAvatar] = useState(currentUser?.avatar || "https://placehold.co/128x128.png");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
@@ -25,7 +25,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const canChangeName = currentUser?.canChangeName ?? false;
+  const [canChangeName, setCanChangeName] = useState(currentUser?.canChangeName ?? false);
 
   useEffect(() => {
     if (currentUser) {
@@ -33,6 +33,12 @@ export default function ProfilePage() {
       if (savedAvatar) {
         setAvatar(savedAvatar);
       }
+      const savedName = localStorage.getItem(`user-name-${currentUser.id}`);
+      setName(savedName || currentUser.name || currentUser.email.split('@')[0]);
+      
+      // In a real app this would come from the database on page load.
+      // For this mock, we don't have a way to reflect the admin's change in real-time without a page reload.
+      setCanChangeName(currentUser.canChangeName);
     }
   }, []);
 
@@ -55,28 +61,46 @@ export default function ProfilePage() {
   const handleSaveChanges = () => {
     if (!currentUser) return;
     setIsLoading(true);
-    // In a real app, you would save this to a database
+
     setTimeout(() => {
       let photoUpdated = false;
+      let nameUpdated = false;
+
+      // Check if name was changed
+      const originalName = localStorage.getItem(`user-name-${currentUser.id}`) || currentUser.name || currentUser.email.split('@')[0];
+      if (name !== originalName) {
+        localStorage.setItem(`user-name-${currentUser.id}`, name);
+        nameUpdated = true;
+      }
+
       if (avatarPreview && avatarFile) {
-        // Here you would upload the avatarFile to your storage and get a URL
-        // For now, we'll just update the local state to simulate it.
         localStorage.setItem(`user-avatar-${currentUser.id}`, avatarPreview);
         setAvatar(avatarPreview);
         setAvatarPreview(null);
         setAvatarFile(null);
         photoUpdated = true;
-        // Dispatch event to notify other components of avatar change
+      }
+      
+      if (photoUpdated || nameUpdated) {
         window.dispatchEvent(new Event('avatar-updated'));
+        
+        let description = "Your ";
+        if(photoUpdated && nameUpdated) description += "photo and name have";
+        else if (photoUpdated) description += "photo has";
+        else description += "name has";
+        description += " been successfully updated.";
+
+        toast({
+          title: "Profile Updated",
+          description: description,
+        });
+      } else {
+         toast({
+          title: "No Changes",
+          description: "You haven't made any changes to your profile.",
+        });
       }
 
-      console.log("Saving new name:", name);
-      // Here you would update the user data source
-      
-      toast({
-        title: "Profile Updated",
-        description: `Your ${photoUpdated ? "photo and " : ""}name has been successfully updated.`,
-      });
       setIsLoading(false);
     }, 1000);
   };
