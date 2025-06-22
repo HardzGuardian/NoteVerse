@@ -26,33 +26,31 @@ export default function AboutPage() {
             <p>{aboutContent}</p>
           </CardContent>
           {(socialLinks.facebook || socialLinks.instagram || socialLinks.twitter || socialLinks.youtube) && (
-             <CardFooter className="flex-col items-start gap-4 pt-4">
-                <div className="grid w-full grid-cols-1 sm:grid-cols-2 gap-4">
-                    {socialLinks.facebook && (
-                        <Link href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-primary p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                            <Facebook className="h-6 w-6" />
-                            <span className="font-medium">Facebook</span>
-                        </Link>
-                    )}
-                    {socialLinks.instagram && (
-                        <Link href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-primary p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                            <Instagram className="h-6 w-6" />
-                            <span className="font-medium">Instagram</span>
-                        </Link>
-                    )}
-                    {socialLinks.twitter && (
-                        <Link href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-primary p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                            <Twitter className="h-6 w-6" />
-                            <span className="font-medium">Twitter</span>
-                        </Link>
-                    )}
-                    {socialLinks.youtube && (
-                        <Link href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 text-muted-foreground hover:text-primary p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                            <Youtube className="h-6 w-6" />
-                            <span className="font-medium">YouTube</span>
-                        </Link>
-                    )}
-                </div>
+             <CardFooter className="flex justify-center gap-6 pt-6">
+                {socialLinks.facebook && (
+                    <Link href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        <Facebook className="h-7 w-7" />
+                        <span className="sr-only">Facebook</span>
+                    </Link>
+                )}
+                {socialLinks.instagram && (
+                    <Link href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        <Instagram className="h-7 w-7" />
+                        <span className="sr-only">Instagram</span>
+                    </Link>
+                )}
+                {socialLinks.twitter && (
+                    <Link href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        <Twitter className="h-7 w-7" />
+                        <span className="sr-only">Twitter</span>
+                    </Link>
+                )}
+                {socialLinks.youtube && (
+                    <Link href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        <Youtube className="h-7 w-7" />
+                        <span className="sr-only">YouTube</span>
+                    </Link>
+                )}
             </CardFooter>
           )}
         </Card>
