@@ -27,7 +27,16 @@ export default function LoginPage() {
   const [overlayOpacity, setOverlayOpacity] = useState(50);
 
   useEffect(() => {
-    // This effect runs on the client to safely access localStorage.
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "login-background-image" && e.newValue) {
+        setBackground(e.newValue);
+      }
+      if (e.key === "login-overlay-opacity" && e.newValue) {
+        setOverlayOpacity(Number(e.newValue));
+      }
+    };
+
+    // Set initial values from localStorage
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setBackground(savedBg);
@@ -36,6 +45,13 @@ export default function LoginPage() {
     if (savedOpacity) {
       setOverlayOpacity(Number(savedOpacity));
     }
+
+    // Listen for changes from other tabs
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleLogin = () => {

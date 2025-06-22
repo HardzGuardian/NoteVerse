@@ -21,6 +21,16 @@ export default function AdminSettingsPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+     const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "login-background-image" && e.newValue) {
+        setPreview(e.newValue);
+      }
+      if (e.key === "login-overlay-opacity" && e.newValue) {
+        setOverlayOpacity(Number(e.newValue));
+      }
+    };
+    
+    // Set initial values from localStorage
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setPreview(savedBg);
@@ -30,6 +40,13 @@ export default function AdminSettingsPage() {
       setOverlayOpacity(Number(savedOpacity));
     }
     setMounted(true);
+
+    // Listen for changes from other tabs to keep this page in sync
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
