@@ -19,28 +19,38 @@ export default function UsersPage() {
   const loggedInUserId = 'usr2';
 
   useEffect(() => {
-    // This effect runs only on the client to check the user's preference and avatar.
-    const hideNamePreference = localStorage.getItem('user-hide-name');
-    const shouldHideName = hideNamePreference ? JSON.parse(hideNamePreference) : true;
+    const loadUsers = () => {
+        // This effect runs only on the client to check the user's preference and avatar.
+        const hideNamePreference = localStorage.getItem('user-hide-name');
+        const shouldHideName = hideNamePreference ? JSON.parse(hideNamePreference) : true;
 
-    const processedUsers = initialUsers.map(user => {
-      const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
-      let userIsHidden = user.displayNameHidden;
+        const processedUsers = initialUsers.map(user => {
+        const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
+        let userIsHidden = user.displayNameHidden;
 
-      // If this user is the one currently logged in, respect their privacy setting.
-      if (user.id === loggedInUserId) {
-        userIsHidden = shouldHideName;
-      }
-      
-      return { 
-        ...user, 
-        displayNameHidden: userIsHidden,
-        avatar: storedAvatar || user.avatar, // Override avatar if it exists in local storage
-      };
-    });
+        // If this user is the one currently logged in, respect their privacy setting.
+        if (user.id === loggedInUserId) {
+            userIsHidden = shouldHideName;
+        }
+        
+        return { 
+            ...user, 
+            displayNameHidden: userIsHidden,
+            avatar: storedAvatar || user.avatar, // Override avatar if it exists in local storage
+        };
+        });
 
-    setDisplayUsers(processedUsers);
-    setIsLoading(false);
+        setDisplayUsers(processedUsers);
+        setIsLoading(false);
+    };
+
+    loadUsers();
+
+    // Listen for avatar updates to refresh the list
+    window.addEventListener('avatar-updated', loadUsers);
+    return () => {
+        window.removeEventListener('avatar-updated', loadUsers);
+    };
   }, []);
 
   const getRoleClass = (role: User['role']) => {

@@ -37,14 +37,24 @@ export default function UserManagementPage() {
   const { toast } = useToast();
   
   useEffect(() => {
-    const processedUsers = initialUsers.map(user => {
-        const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
-        return {
-            ...user,
-            avatar: storedAvatar || user.avatar,
-        };
-    });
-    setUsers(processedUsers);
+    const loadUsers = () => {
+        const processedUsers = initialUsers.map(user => {
+            const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
+            return {
+                ...user,
+                avatar: storedAvatar || user.avatar,
+            };
+        });
+        setUsers(processedUsers);
+    };
+
+    loadUsers();
+
+    // Listen for avatar updates to refresh the list
+    window.addEventListener('avatar-updated', loadUsers);
+    return () => {
+        window.removeEventListener('avatar-updated', loadUsers);
+    };
   }, []);
 
   const handleOpenEditDialog = (user: User) => {

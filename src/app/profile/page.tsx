@@ -66,6 +66,8 @@ export default function ProfilePage() {
         setAvatarPreview(null);
         setAvatarFile(null);
         photoUpdated = true;
+        // Dispatch event to notify other components of avatar change
+        window.dispatchEvent(new Event('avatar-updated'));
       }
 
       console.log("Saving new name:", name);

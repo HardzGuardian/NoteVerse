@@ -1,7 +1,9 @@
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Book,
   Home,
@@ -34,14 +36,40 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { users } from "@/lib/data";
 
 type AppLayoutProps = {
   children: React.ReactNode;
   pageTitle: string;
 };
 
+// In a real app, this would come from an auth context
+const loggedInUserId = 'usr2';
+
 export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const pathname = usePathname();
+  const [avatar, setAvatar] = useState("https://placehold.co/100x100.png");
+  const [userName, setUserName] = useState("U");
+
+  useEffect(() => {
+    const currentUser = users.find(u => u.id === loggedInUserId);
+    if (!currentUser) return;
+    
+    const updateAvatarAndName = () => {
+        const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
+        setAvatar(savedAvatar || currentUser.avatar);
+        setUserName(currentUser.name || currentUser.email.split('@')[0]);
+    };
+
+    updateAvatarAndName();
+
+    // Listen for the custom event to update the avatar
+    window.addEventListener('avatar-updated', updateAvatarAndName);
+
+    return () => {
+        window.removeEventListener('avatar-updated', updateAvatarAndName);
+    };
+  }, []);
 
   return (
     <SidebarProvider>
@@ -104,8 +132,8 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar>
-                  <AvatarImage src="https://placehold.co/100x100.png" alt="User" data-ai-hint="person avatar" />
-                  <AvatarFallback>U</AvatarFallback>
+                  <AvatarImage src={avatar} alt="User" data-ai-hint="person avatar" />
+                  <AvatarFallback>{(userName.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
