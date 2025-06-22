@@ -44,23 +44,27 @@ type AppLayoutProps = {
   pageTitle: string;
 };
 
-// In a real app, this would come from an auth context
-const loggedInUserId = 'usr2';
-
 export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const pathname = usePathname();
   const [avatar, setAvatar] = useState("https://placehold.co/100x100.png");
   const [userName, setUserName] = useState("U");
 
   useEffect(() => {
-    const currentUser = users.find(u => u.id === loggedInUserId);
-    if (!currentUser) return;
-    
+    // This effect runs on mount and when the custom event is dispatched
     const updateAvatarAndName = () => {
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (!loggedInUserId) return;
+
+        const currentUser = users.find(u => u.id === loggedInUserId);
+
         const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
         const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
-        setAvatar(savedAvatar || currentUser.avatar);
-        setUserName(savedName || currentUser.name || currentUser.email.split('@')[0]);
+        
+        const nameToSet = savedName || currentUser?.name || "User";
+        const avatarToSet = savedAvatar || currentUser?.avatar || "https://placehold.co/100x100.png";
+
+        setAvatar(avatarToSet);
+        setUserName(nameToSet);
     };
 
     updateAvatarAndName();

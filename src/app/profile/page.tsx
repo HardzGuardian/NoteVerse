@@ -13,14 +13,11 @@ import { users } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 
-// In a real app, you'd get this from an auth context
-const loggedInUserId = 'usr2'; 
-const currentUser = users.find(u => u.id === loggedInUserId);
-
 export default function ProfilePage() {
   const { toast } = useToast();
   const [name, setName] = useState("");
-  const [avatar, setAvatar] = useState(currentUser?.avatar || "https://placehold.co/128x128.png");
+  const [email, setEmail] = useState("");
+  const [avatar, setAvatar] = useState("https://placehold.co/128x128.png");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   
   const [currentPassword, setCurrentPassword] = useState("");
@@ -30,17 +27,26 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const [canChangeName, setCanChangeName] = useState(currentUser?.canChangeName ?? false);
+  const [canChangeName, setCanChangeName] = useState(true);
 
   useEffect(() => {
-    if (currentUser) {
-      const savedAvatar = localStorage.getItem(`user-avatar-${currentUser.id}`);
-      if (savedAvatar) {
-        setAvatar(savedAvatar);
-      }
-      const savedName = localStorage.getItem(`user-name-${currentUser.id}`);
-      setName(savedName || currentUser.name || currentUser.email.split('@')[0]);
-      
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (!loggedInUserId) return;
+
+    const currentUser = users.find(u => u.id === loggedInUserId);
+
+    const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
+    const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
+    const savedEmail = localStorage.getItem(`user-email-${loggedInUserId}`);
+    const savedCanChangeName = localStorage.getItem(`user-canChangeName-${loggedInUserId}`);
+
+    setAvatar(savedAvatar || currentUser?.avatar || "https://placehold.co/128x128.png");
+    setName(savedName || currentUser?.name || "User");
+    setEmail(savedEmail || currentUser?.email || "");
+
+    if (savedCanChangeName !== null) {
+      setCanChangeName(JSON.parse(savedCanChangeName));
+    } else if (currentUser) {
       setCanChangeName(currentUser.canChangeName);
     }
   }, []);
@@ -61,7 +67,8 @@ export default function ProfilePage() {
   };
 
   const handleSaveChanges = () => {
-    if (!currentUser) return;
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (!loggedInUserId) return;
     setIsLoading(true);
 
     setTimeout(() => {
@@ -88,14 +95,14 @@ export default function ProfilePage() {
         passwordUpdated = true;
       }
       
-      const originalName = localStorage.getItem(`user-name-${currentUser.id}`) || currentUser.name || currentUser.email.split('@')[0];
+      const originalName = localStorage.getItem(`user-name-${loggedInUserId}`) || "";
       if (name !== originalName) {
-        localStorage.setItem(`user-name-${currentUser.id}`, name);
+        localStorage.setItem(`user-name-${loggedInUserId}`, name);
         nameUpdated = true;
       }
 
       if (avatarPreview) {
-        localStorage.setItem(`user-avatar-${currentUser.id}`, avatarPreview);
+        localStorage.setItem(`user-avatar-${loggedInUserId}`, avatarPreview);
         setAvatar(avatarPreview);
         setAvatarPreview(null);
         photoUpdated = true;
@@ -169,7 +176,7 @@ export default function ProfilePage() {
                     </div>
                     <div className="space-y-2">
                         <Label htmlFor="email">Email Address</Label>
-                        <Input id="email" type="email" defaultValue={currentUser?.email || ""} disabled />
+                        <Input id="email" type="email" value={email} disabled />
                     </div>
                 </div>
             </div>

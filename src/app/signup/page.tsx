@@ -15,16 +15,40 @@ export default function SignupPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (password !== confirmPassword) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Passwords do not match.",
+      });
+      return;
+    }
+
     setIsLoading(true);
 
-    // In a real app, you would perform form validation and then
-    // send the data to your backend to create a new user account.
-    
-    // For this mock, we'll just simulate a delay.
+    // In a real app, you would create a user in a database.
+    // For this mock, we'll simulate it with localStorage.
     setTimeout(() => {
+      const newUserId = `usr${Date.now()}`;
+      
+      // Save the new user's ID to represent the current "session"
+      localStorage.setItem('loggedInUserId', newUserId);
+
+      // Save the new user's details to localStorage
+      localStorage.setItem(`user-name-${newUserId}`, username);
+      localStorage.setItem(`user-email-${newUserId}`, email);
+      localStorage.setItem(`user-avatar-${newUserId}`, 'https://placehold.co/100x100.png'); // Default avatar
+      localStorage.setItem(`user-role-${newUserId}`, 'Student');
+      localStorage.setItem(`user-canChangeName-${newUserId}`, 'true');
+
       toast({
         title: "Account Created!",
         description: "Welcome to NoteVerse. You are now being logged in.",
@@ -50,19 +74,19 @@ export default function SignupPage() {
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="username">Username</Label>
-                <Input id="username" placeholder="johndoe" required disabled={isLoading} />
+                <Input id="username" placeholder="johndoe" required disabled={isLoading} value={username} onChange={(e) => setUsername(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input id="email" type="email" placeholder="student@example.com" required disabled={isLoading} />
+                <Input id="email" type="email" placeholder="student@example.com" required disabled={isLoading} value={email} onChange={(e) => setEmail(e.target.value)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
-                <Input id="password" type="password" required disabled={isLoading} />
+                <Input id="password" type="password" required disabled={isLoading} value={password} onChange={(e) => setPassword(e.target.value)} />
               </div>
                <div className="space-y-2">
                 <Label htmlFor="confirm-password">Confirm Password</Label>
-                <Input id="confirm-password" type="password" required disabled={isLoading} />
+                <Input id="confirm-password" type="password" required disabled={isLoading} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </div>
               <Button type="submit" className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold" disabled={isLoading}>
                 {isLoading ? (
