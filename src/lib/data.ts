@@ -27,6 +27,7 @@ export type User = {
   role: 'Admin' | 'Student' | 'Uploader';
   status: 'online' | 'offline';
   displayNameHidden: boolean;
+  canChangeName: boolean;
 };
 
 export type SocialLink = {
@@ -38,10 +39,10 @@ export type SocialLink = {
 };
 
 export const users: User[] = [
-  { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online', displayNameHidden: false },
-  { id: 'usr2', name: 'Jane Doe', avatar: 'https://placehold.co/100x100.png', email: 'jane.doe@example.com', role: 'Student', status: 'online', displayNameHidden: true },
-  { id: 'usr3', name: 'John Smith', avatar: 'https://placehold.co/100x100.png', email: 'john.smith@example.com', role: 'Student', status: 'offline', displayNameHidden: true },
-  { id: 'usr4', name: 'Professor Oak', avatar: 'https://placehold.co/100x100.png', email: 'prof.oak@example.com', role: 'Uploader', status: 'online', displayNameHidden: true },
+  { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online', displayNameHidden: false, canChangeName: true },
+  { id: 'usr2', name: 'Jane Doe', avatar: 'https://placehold.co/100x100.png', email: 'jane.doe@example.com', role: 'Student', status: 'online', displayNameHidden: true, canChangeName: true },
+  { id: 'usr3', name: 'John Smith', avatar: 'https://placehold.co/100x100.png', email: 'john.smith@example.com', role: 'Student', status: 'offline', displayNameHidden: true, canChangeName: true },
+  { id: 'usr4', name: 'Professor Oak', avatar: 'https://placehold.co/100x100.png', email: 'prof.oak@example.com', role: 'Uploader', status: 'online', displayNameHidden: true, canChangeName: true },
 ];
 
 export const semesters: Semester[] = [

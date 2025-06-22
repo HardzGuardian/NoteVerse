@@ -17,29 +17,59 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { Switch } from "@/components/ui/switch";
 
 type UserRole = "Admin" | "Student" | "Uploader";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>(initialUsers);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
-  const [selectedRole, setSelectedRole] = useState<UserRole>("Student");
+  const [editedUserData, setEditedUserData] = useState<{ name: string; role: UserRole; canChangeName: boolean }>({
+    name: '',
+    role: 'Student',
+    canChangeName: true,
+  });
+
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'Student' as UserRole });
   const { toast } = useToast();
 
-  const handleEditRole = (user: User) => {
+  const handleOpenEditDialog = (user: User) => {
     setUserToEdit(user);
-    setSelectedRole(user.role);
+    setEditedUserData({
+      name: user.name,
+      role: user.role,
+      canChangeName: user.canChangeName,
+    });
   };
 
-  const handleSaveRole = () => {
+  const handleSaveUser = () => {
     if (!userToEdit) return;
-    setUsers(users.map(u => u.id === userToEdit.id ? { ...u, role: selectedRole } : u));
+
+    if (!editedUserData.name.trim()) {
+        toast({
+            variant: "destructive",
+            title: "Error",
+            description: "User name cannot be empty.",
+        });
+        return;
+    }
+
+    setUsers(users.map(u => 
+        u.id === userToEdit.id 
+        ? { ...u, 
+            name: editedUserData.name, 
+            role: editedUserData.role,
+            canChangeName: editedUserData.canChangeName 
+          } 
+        : u
+    ));
+
     toast({
-      title: "Role Updated",
-      description: `${userToEdit.name}'s role has been updated to ${selectedRole}.`,
+      title: "User Updated",
+      description: `${userToEdit.name}'s details have been updated.`,
     });
     setUserToEdit(null);
   };
@@ -70,6 +100,9 @@ export default function UserManagementPage() {
         email: newUserData.email,
         role: newUserData.role,
         avatar: 'https://placehold.co/100x100.png',
+        status: 'offline',
+        displayNameHidden: true,
+        canChangeName: true,
     };
     setUsers([...users, newUser]);
     toast({
@@ -138,9 +171,9 @@ export default function UserManagementPage() {
                       <DropdownMenuContent align="end">
                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
                          <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleEditRole(user)}>
+                        <DropdownMenuItem onClick={() => handleOpenEditDialog(user)}>
                           <Edit className="mr-2 h-4 w-4" />
-                          Edit Role
+                          Edit User
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => setUserToDelete(user)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
                           <Trash2 className="mr-2 h-4 w-4" />
@@ -206,31 +239,58 @@ export default function UserManagementPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Edit Role Dialog */}
+      {/* Edit User Dialog */}
       <Dialog open={!!userToEdit} onOpenChange={(isOpen) => !isOpen && setUserToEdit(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Role for {userToEdit?.name}</DialogTitle>
+            <DialogTitle>Edit: {userToEdit?.name}</DialogTitle>
             <DialogDescription>
-              Changing a user's role will alter their permissions across the application.
+              Modify user details and permissions.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
-            <Label htmlFor="role-select">User Role</Label>
-            <Select value={selectedRole} onValueChange={(value: UserRole) => setSelectedRole(value)}>
-                <SelectTrigger id="role-select">
-                    <SelectValue placeholder="Select a role" />
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Full Name</Label>
+              <Input
+                id="edit-name"
+                value={editedUserData.name}
+                onChange={(e) => setEditedUserData({ ...editedUserData, name: e.target.value })}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input value={userToEdit?.email || ''} disabled />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="role-select-edit">Role</Label>
+              <Select value={editedUserData.role} onValueChange={(value: UserRole) => setEditedUserData({ ...editedUserData, role: value })}>
+                <SelectTrigger id="role-select-edit">
+                  <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                    <SelectItem value="Student">Student</SelectItem>
-                    <SelectItem value="Uploader">Uploader</SelectItem>
-                    <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Student">Student</SelectItem>
+                  <SelectItem value="Uploader">Uploader</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
                 </SelectContent>
-            </Select>
+              </Select>
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-3.5">
+              <div>
+                <Label htmlFor="name-ban-switch" className="font-medium">Allow Name Change</Label>
+                <p className="text-sm text-muted-foreground">
+                  {editedUserData.canChangeName ? "User can edit their name." : "User is banned from editing their name."}
+                </p>
+              </div>
+              <Switch
+                id="name-ban-switch"
+                checked={editedUserData.canChangeName}
+                onCheckedChange={(checked) => setEditedUserData({ ...editedUserData, canChangeName: checked })}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setUserToEdit(null)}>Cancel</Button>
-            <Button onClick={handleSaveRole}>Save Changes</Button>
+            <Button onClick={handleSaveUser}>Save Changes</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
