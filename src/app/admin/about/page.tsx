@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { aboutContent, socialLinks as initialSocials, SocialLink } from "@/lib/data";
 import { Loader2, Save, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -80,9 +81,21 @@ const socialIcons: Record<SocialLink['id'], React.ComponentType<React.SVGProps<S
 
 export default function AdminEditAboutPage() {
   const { toast } = useToast();
-  const [content, setContent] = useState(aboutContent);
+  const [content, setContent] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [socials, setSocials] = useState<SocialLink[]>(initialSocials);
+  const [socials, setSocials] = useState<SocialLink[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const savedContent = localStorage.getItem('about-content');
+    setContent(savedContent || aboutContent);
+    
+    const savedSocials = localStorage.getItem('social-links');
+    setSocials(savedSocials ? JSON.parse(savedSocials) : initialSocials);
+    
+    setIsMounted(true);
+  }, []);
+
 
   const handleSocialChange = (id: SocialLink['id'], key: 'url' | 'enabled', value: string | boolean) => {
     setSocials(currentSocials => 
@@ -96,8 +109,10 @@ export default function AdminEditAboutPage() {
     setIsLoading(true);
     setTimeout(() => {
       // In a real app, you would save this to a database.
-      console.log("Saving content:", content);
-      console.log("Saving socials:", socials);
+      // For this mock, we use localStorage.
+      localStorage.setItem('about-content', content);
+      localStorage.setItem('social-links', JSON.stringify(socials));
+
       setIsLoading(false);
       toast({
         title: "Success!",
@@ -119,49 +134,57 @@ export default function AdminEditAboutPage() {
           <CardContent className="space-y-6">
             <div>
               <Label htmlFor="about-content">Page Content</Label>
-              <Textarea
-                id="about-content"
-                placeholder="Type the about page content here..."
-                className="min-h-[200px] text-base"
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-              />
+              {isMounted ? (
+                <Textarea
+                  id="about-content"
+                  placeholder="Type the about page content here..."
+                  className="min-h-[200px] text-base"
+                  value={content}
+                  onChange={(e) => setContent(e.target.value)}
+                />
+              ) : (
+                <Skeleton className="w-full min-h-[200px] rounded-md" />
+              )}
             </div>
 
             <div className="space-y-4 pt-4">
               <h3 className="text-lg font-medium text-foreground">Social Links</h3>
               <p className="text-sm text-muted-foreground">Enable and provide URLs for the social media links you want to display on the public About page.</p>
               <div className="space-y-3">
-                {socials.map(social => {
-                  const Icon = socialIcons[social.id];
-                  return (
-                    <div key={social.id} className="flex items-center gap-4 rounded-lg border p-3.5">
-                      <Icon className="h-6 w-6 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-grow space-y-1">
-                          <Label htmlFor={social.id} className="font-medium">{social.name}</Label>
-                          <Input 
-                            id={social.id} 
-                            placeholder={social.placeholder} 
-                            value={social.url}
-                            onChange={(e) => handleSocialChange(social.id, 'url', e.target.value)}
-                            disabled={!social.enabled}
-                            className="text-sm"
-                          />
+                {isMounted ? (
+                  socials.map(social => {
+                    const Icon = socialIcons[social.id];
+                    return (
+                      <div key={social.id} className="flex items-center gap-4 rounded-lg border p-3.5">
+                        <Icon className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+                        <div className="flex-grow space-y-1">
+                            <Label htmlFor={social.id} className="font-medium">{social.name}</Label>
+                            <Input 
+                              id={social.id} 
+                              placeholder={social.placeholder} 
+                              value={social.url}
+                              onChange={(e) => handleSocialChange(social.id, 'url', e.target.value)}
+                              disabled={!social.enabled}
+                              className="text-sm"
+                            />
+                        </div>
+                        <Switch
+                            id={`switch-${social.id}`}
+                            checked={social.enabled}
+                            onCheckedChange={(checked) => handleSocialChange(social.id, 'enabled', checked)}
+                            aria-label={`Enable ${social.name} link`}
+                        />
                       </div>
-                      <Switch
-                          id={`switch-${social.id}`}
-                          checked={social.enabled}
-                          onCheckedChange={(checked) => handleSocialChange(social.id, 'enabled', checked)}
-                          aria-label={`Enable ${social.name} link`}
-                      />
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                ) : (
+                  Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="w-full h-[88px] rounded-lg" />)
+                )}
               </div>
             </div>
             
             <div className="pt-2">
-              <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90">
+              <Button onClick={handleSave} disabled={isLoading || !isMounted} className="w-full sm:w-auto bg-accent hover:bg-accent/90">
                 {isLoading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

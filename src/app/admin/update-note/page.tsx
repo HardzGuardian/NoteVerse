@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,15 +9,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { updateNote } from "@/lib/data";
 import { Loader2, Save } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function UpdateNotePage() {
   const { toast } = useToast();
-  const [note, setNote] = useState(updateNote.text);
+  const [note, setNote] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const savedNote = localStorage.getItem('update-note-text');
+    setNote(savedNote || updateNote.text);
+    setIsMounted(true);
+  }, []);
 
   const handleSave = () => {
     setIsLoading(true);
     setTimeout(() => {
+      const currentDate = new Date().toISOString().split('T')[0];
+      // In a real app, you would save this to a database.
+      localStorage.setItem('update-note-text', note);
+      localStorage.setItem('update-note-date', currentDate);
+      
       setIsLoading(false);
       toast({
         title: "Success!",
@@ -36,13 +50,17 @@ export default function UpdateNotePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Textarea
-              placeholder="Type your announcement here..."
-              className="min-h-[200px] text-base"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
-            <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90">
+            {isMounted ? (
+              <Textarea
+                placeholder="Type your announcement here..."
+                className="min-h-[200px] text-base"
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+              />
+            ) : (
+              <Skeleton className="w-full min-h-[200px] rounded-md" />
+            )}
+            <Button onClick={handleSave} disabled={isLoading || !isMounted} className="w-full sm:w-auto bg-accent hover:bg-accent/90">
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (

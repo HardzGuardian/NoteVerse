@@ -18,6 +18,7 @@ export default function HomePage() {
   const [userName, setUserName] = useState("Student");
   const [avatar, setAvatar] = useState("https://placehold.co/128x128.png");
   const [avatarFallback, setAvatarFallback] = useState("S");
+  const [noteText, setNoteText] = useState(updateNote.text);
 
   useEffect(() => {
     const currentUser = users.find(u => u.id === loggedInUserId);
@@ -32,11 +33,21 @@ export default function HomePage() {
       setUserName(name);
       setAvatarFallback(name.charAt(0).toUpperCase());
     };
+    
+    const updateNoteData = () => {
+        const savedNote = localStorage.getItem('update-note-text');
+        if (savedNote) {
+            setNoteText(savedNote);
+        }
+    }
 
     updateUserData();
+    updateNoteData();
 
-    // Listen for avatar updates to refresh
+    // Listen for updates to refresh
     window.addEventListener('avatar-updated', updateUserData);
+    // You could create a similar event for note updates if needed
+    
     return () => {
         window.removeEventListener('avatar-updated', updateUserData);
     };
@@ -85,7 +96,7 @@ export default function HomePage() {
                     </div>
                   </CardHeader>
                   <CardContent className="flex-grow">
-                    <p className="text-muted-foreground line-clamp-3">{updateNote.text}</p>
+                    <p className="text-muted-foreground line-clamp-3">{noteText}</p>
                   </CardContent>
                 </Card>
             </Link>

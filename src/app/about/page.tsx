@@ -2,10 +2,12 @@
 "use client";
 
 import Link from "next/link";
+import { useState, useEffect } from "react";
 import { AppLayout } from "@/components/app-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { aboutContent, socialLinks } from "@/lib/data";
+import { aboutContent, socialLinks as defaultSocials } from "@/lib/data";
 import { Info, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
@@ -72,7 +74,21 @@ const ICONS: Record<string, React.ReactElement> = {
 };
 
 export default function AboutPage() {
-  const visibleLinks = socialLinks.filter(link => link.enabled && link.url);
+  const [content, setContent] = useState("");
+  const [socials, setSocials] = useState(defaultSocials);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    const savedContent = localStorage.getItem('about-content');
+    setContent(savedContent || aboutContent);
+
+    const savedSocials = localStorage.getItem('social-links');
+    setSocials(savedSocials ? JSON.parse(savedSocials) : defaultSocials);
+
+    setIsMounted(true);
+  }, []);
+  
+  const visibleLinks = socials.filter(link => link.enabled && link.url);
 
   return (
     <AppLayout pageTitle="About NoteVerse">
@@ -90,16 +106,32 @@ export default function AboutPage() {
             </div>
           </CardHeader>
           <CardContent className="prose dark:prose-invert max-w-none text-base text-card-foreground/90 leading-relaxed">
-            <p>{aboutContent}</p>
+            {isMounted ? (
+                <p>{content}</p>
+            ) : (
+                <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                </div>
+            )}
           </CardContent>
           {visibleLinks.length > 0 && (
              <CardFooter className="flex justify-center gap-6 pt-6">
-                {visibleLinks.map(link => (
-                    <Link key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        {ICONS[link.id]}
-                        <span className="sr-only">{link.name}</span>
-                    </Link>
-                ))}
+                {isMounted ? (
+                    visibleLinks.map(link => (
+                        <Link key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                            {ICONS[link.id]}
+                            <span className="sr-only">{link.name}</span>
+                        </Link>
+                    ))
+                ) : (
+                    <div className="flex justify-center gap-6">
+                        <Skeleton className="h-7 w-7 rounded-full" />
+                        <Skeleton className="h-7 w-7 rounded-full" />
+                        <Skeleton className="h-7 w-7 rounded-full" />
+                    </div>
+                )}
             </CardFooter>
           )}
         </Card>
