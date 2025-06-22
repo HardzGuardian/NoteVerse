@@ -3,6 +3,7 @@ export type PDF = {
   title: string;
   url: string;
   createdAt: string;
+  category: 'Note' | 'Exam';
 };
 
 export type Subject = {
@@ -41,15 +42,16 @@ export const semesters: Semester[] = [
         id: "s1sub1",
         name: "Introduction to Computer Science",
         pdfs: [
-          { id: "pdf1", title: "Lecture 1: Basics of Programming", url: "#", createdAt: "2023-09-05" },
-          { id: "pdf2", title: "Lecture 2: Data Structures", url: "#", createdAt: "2023-09-12" },
+          { id: "pdf1", title: "Lecture 1: Basics of Programming", url: "#", createdAt: "2023-09-05", category: "Note" },
+          { id: "pdf2", title: "Lecture 2: Data Structures", url: "#", createdAt: "2023-09-12", category: "Note" },
+          { id: "pdf_exam1", title: "Midterm Exam Paper", url: "#", createdAt: "2023-10-20", category: "Exam" },
         ],
       },
       {
         id: "s1sub2",
         name: "Calculus I",
         pdfs: [
-          { id: "pdf3", title: "Chapter 1: Limits", url: "#", createdAt: "2023-09-06" },
+          { id: "pdf3", title: "Chapter 1: Limits", url: "#", createdAt: "2023-09-06", category: "Note" },
         ],
       },
     ],
@@ -62,7 +64,8 @@ export const semesters: Semester[] = [
         id: "s2sub1",
         name: "Advanced Programming",
         pdfs: [
-            { id: "pdf4", title: "Syllabus", url: "#", createdAt: "2024-01-15" },
+            { id: "pdf4", title: "Syllabus", url: "#", createdAt: "2024-01-15", category: "Note" },
+            { id: "pdf_exam2", title: "Final Exam Question Bank", url: "#", createdAt: "2024-04-10", category: "Exam" },
         ],
       },
       {

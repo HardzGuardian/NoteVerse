@@ -13,6 +13,10 @@ export default {
         body: ['PT Sans', 'sans-serif'],
         headline: ['Playfair Display', 'serif'],
         code: ['monospace'],
+        roboto: ['Roboto', 'sans-serif'],
+        lato: ['Lato', 'sans-serif'],
+        'open-sans': ['"Open Sans"', 'sans-serif'],
+        merriweather: ['Merriweather', 'serif'],
       },
       colors: {
         background: 'hsl(var(--background))',

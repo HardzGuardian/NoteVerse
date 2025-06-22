@@ -7,10 +7,81 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { semesters as allSemesters } from "@/lib/data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { semesters as allSemesters, PDF } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+
+type PDFTableProps = {
+  pdfs: PDF[];
+  onDownload: (title: string) => void;
+  onDelete: (title: string) => void;
+  type: 'Note' | 'Exam';
+};
+
+const PDFTable = ({ pdfs, onDownload, onDelete, type }: PDFTableProps) => {
+  if (pdfs.length === 0) {
+    return (
+      <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="mx-auto bg-secondary p-4 rounded-full">
+          <FolderOpen className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <h3 className="mt-4 text-lg font-semibold">No {type}s Available</h3>
+        <p className="text-muted-foreground">Upload the first {type.toLowerCase()} for this subject.</p>
+        <Button className="mt-4 bg-accent hover:bg-accent/90">
+          <PlusCircle className="mr-2 h-4 w-4" /> Upload First {type}
+        </Button>
+      </CardContent>
+    );
+  }
+
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Title</TableHead>
+          <TableHead className="hidden md:table-cell">Date Added</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {pdfs.map((pdf) => (
+          <TableRow key={pdf.id}>
+            <TableCell className="font-medium">
+              <div className="flex items-center gap-2">
+                <FileText className="h-5 w-5 text-muted-foreground"/>
+                <span>{pdf.title}</span>
+              </div>
+            </TableCell>
+            <TableCell className="hidden md:table-cell text-muted-foreground">{pdf.createdAt}</TableCell>
+            <TableCell className="text-right">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
+                    <Download className="mr-2 h-4 w-4" /> Download
+                  </DropdownMenuItem>
+                  <DropdownMenuItem 
+                      onClick={() => onDelete(pdf.title)}
+                      className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+};
+
 
 export default function AdminPDFsPage({ params }: { params: { semesterId: string; subjectId: string } }) {
   const [loading, setLoading] = useState(true);
@@ -54,15 +125,18 @@ export default function AdminPDFsPage({ params }: { params: { semesterId: string
     );
   }
 
+  const notes = subject?.pdfs.filter(pdf => pdf.category === 'Note') || [];
+  const exams = subject?.pdfs.filter(pdf => pdf.category === 'Exam') || [];
+
   return (
     <AdminLayout pageTitle={subject?.name || "Loading..."}>
-      <div className="flex justify-between items-center mb-6">
+       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Manage PDF Notes</h2>
-          <p className="text-muted-foreground">Upload, download, or delete notes for this subject.</p>
+          <h2 className="text-2xl font-bold tracking-tight">Manage Subject Files</h2>
+          <p className="text-muted-foreground">Upload, download, or delete notes and exam papers.</p>
         </div>
         <Button className="bg-accent hover:bg-accent/90">
-          <PlusCircle className="mr-2 h-4 w-4" /> Upload PDF
+          <PlusCircle className="mr-2 h-4 w-4" /> Upload File
         </Button>
       </div>
 
@@ -73,59 +147,19 @@ export default function AdminPDFsPage({ params }: { params: { semesterId: string
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
-        ) : subject && subject.pdfs.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Date Added</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {subject.pdfs.map((pdf) => (
-                <TableRow key={pdf.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-muted-foreground"/>
-                        <span>{pdf.title}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">{pdf.createdAt}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleDownload(pdf.title)}>
-                          <Download className="mr-2 h-4 w-4" /> Download
-                        </DropdownMenuItem>
-                        <DropdownMenuItem 
-                            onClick={() => handleDelete(pdf.title)}
-                            className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" /> Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         ) : (
-            <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="mx-auto bg-secondary p-4 rounded-full">
-                    <FolderOpen className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">No PDFs Available</h3>
-                <p className="text-muted-foreground">Upload the first PDF for this subject.</p>
-                <Button className="mt-4 bg-accent hover:bg-accent/90">
-                    <PlusCircle className="mr-2 h-4 w-4" /> Upload First PDF
-                </Button>
-            </CardContent>
+          <Tabs defaultValue="notes">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
+              <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="notes">
+              <PDFTable pdfs={notes} onDownload={handleDownload} onDelete={handleDelete} type="Note" />
+            </TabsContent>
+            <TabsContent value="exams">
+              <PDFTable pdfs={exams} onDownload={handleDownload} onDelete={handleDelete} type="Exam" />
+            </TabsContent>
+          </Tabs>
         )}
       </Card>
     </AdminLayout>

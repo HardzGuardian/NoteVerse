@@ -7,10 +7,70 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { semesters as allSemesters } from "@/lib/data";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { semesters as allSemesters, PDF } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+type PDFTableProps = {
+  pdfs: PDF[];
+  onDownload: (title: string) => void;
+  type: 'Note' | 'Exam';
+};
+
+const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
+  if (pdfs.length === 0) {
+    return (
+      <CardContent className="flex flex-col items-center justify-center py-20 text-center">
+        <div className="mx-auto bg-secondary p-4 rounded-full">
+          <FolderOpen className="h-12 w-12 text-muted-foreground" />
+        </div>
+        <h3 className="mt-4 text-lg font-semibold">No {type}s Available</h3>
+        <p className="text-muted-foreground">The admin hasn't uploaded any {type.toLowerCase()}s for this subject yet.</p>
+      </CardContent>
+    );
+  }
+
+  return (
+     <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead className="hidden md:table-cell">Date Added</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {pdfs.map((pdf) => (
+            <TableRow key={pdf.id}>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-muted-foreground"/>
+                    <span>{pdf.title}</span>
+                </div>
+              </TableCell>
+              <TableCell className="hidden md:table-cell text-muted-foreground">{pdf.createdAt}</TableCell>
+              <TableCell className="text-right">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
+                      <Download className="mr-2 h-4 w-4" /> Download
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+  )
+};
 
 export default function PDFsPage({ params }: { params: { semesterId: string; subjectId: string } }) {
   const [loading, setLoading] = useState(true);
@@ -45,13 +105,17 @@ export default function PDFsPage({ params }: { params: { semesterId: string; sub
       </AppLayout>
     );
   }
+  
+  const notes = subject?.pdfs.filter(pdf => pdf.category === 'Note') || [];
+  const exams = subject?.pdfs.filter(pdf => pdf.category === 'Exam') || [];
+
 
   return (
     <AppLayout pageTitle={subject?.name || "Loading..."}>
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">PDF Notes</h2>
-          <p className="text-muted-foreground">All available notes for this subject.</p>
+          <h2 className="text-2xl font-bold tracking-tight">Subject Files</h2>
+          <p className="text-muted-foreground">All available notes and exam papers for this subject.</p>
         </div>
       </div>
 
@@ -62,51 +126,19 @@ export default function PDFsPage({ params }: { params: { semesterId: string; sub
             <Skeleton className="h-12 w-full" />
             <Skeleton className="h-12 w-full" />
           </div>
-        ) : subject && subject.pdfs.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead className="hidden md:table-cell">Date Added</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {subject.pdfs.map((pdf) => (
-                <TableRow key={pdf.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-muted-foreground"/>
-                        <span>{pdf.title}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="hidden md:table-cell text-muted-foreground">{pdf.createdAt}</TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleDownload(pdf.title)}>
-                          <Download className="mr-2 h-4 w-4" /> Download
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
         ) : (
-            <CardContent className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="mx-auto bg-secondary p-4 rounded-full">
-                    <FolderOpen className="h-12 w-12 text-muted-foreground" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">No PDFs Available</h3>
-                <p className="text-muted-foreground">The admin hasn't uploaded any notes for this subject yet.</p>
-            </CardContent>
+           <Tabs defaultValue="notes">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
+              <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
+            </TabsList>
+            <TabsContent value="notes">
+              <PDFTable pdfs={notes} onDownload={handleDownload} type="Note" />
+            </TabsContent>
+            <TabsContent value="exams">
+              <PDFTable pdfs={exams} onDownload={handleDownload} type="Exam" />
+            </TabsContent>
+          </Tabs>
         )}
       </Card>
     </AppLayout>

@@ -32,63 +32,65 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md">
-        <Card className="shadow-2xl">
-          <CardHeader className="text-center">
-            <div className="mb-4 flex justify-center">
-                <div className="bg-primary text-primary-foreground rounded-full p-3">
-                    <Shield className="h-8 w-8" />
+    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }} data-ai-hint="abstract background">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
+        <div className="w-full max-w-md">
+          <Card className="shadow-2xl">
+            <CardHeader className="text-center">
+              <div className="mb-4 flex justify-center">
+                  <div className="bg-primary text-primary-foreground rounded-full p-3">
+                      <Shield className="h-8 w-8" />
+                  </div>
+              </div>
+              <CardTitle className="font-headline text-4xl">Admin Panel</CardTitle>
+              <CardDescription>Please log in to continue.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input 
+                    id="email" 
+                    type="email" 
+                    placeholder="admin@example.com" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                  />
                 </div>
-            </div>
-            <CardTitle className="font-headline text-4xl">Admin Panel</CardTitle>
-            <CardDescription>Please log in to continue.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="admin@example.com" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password">Password</Label>
-                  {loginAttempts >= 2 && (
-                    <Link
-                      href="#"
-                      className="ml-auto inline-block text-sm underline text-primary font-medium"
-                    >
-                      Forgot password?
-                    </Link>
-                  )}
+                <div className="space-y-2">
+                  <div className="flex items-center">
+                    <Label htmlFor="password">Password</Label>
+                    {loginAttempts >= 2 && (
+                      <Link
+                        href="#"
+                        className="ml-auto inline-block text-sm underline text-primary font-medium"
+                      >
+                        Forgot password?
+                      </Link>
+                    )}
+                  </div>
+                  <Input 
+                    id="password" 
+                    type="password" 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
                 </div>
-                <Input 
-                  id="password" 
-                  type="password" 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="flex flex-col gap-3 pt-2">
+                  <Button onClick={handleLogin} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
+                    Login
+                  </Button>
+                </div>
               </div>
-              <div className="flex flex-col gap-3 pt-2">
-                <Button onClick={handleLogin} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
-                  Login
-                </Button>
+               <div className="mt-4 text-center text-sm">
+                Not an admin?{" "}
+                <Link href="/" className="underline text-primary font-medium">
+                  Go to student login
+                </Link>
               </div>
-            </div>
-             <div className="mt-4 text-center text-sm">
-              Not an admin?{" "}
-              <Link href="/" className="underline text-primary font-medium">
-                Go to student login
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
