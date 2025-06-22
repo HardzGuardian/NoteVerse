@@ -18,18 +18,14 @@ export default function HomePage() {
   const [noteText, setNoteText] = useState(updateNote.text);
 
   useEffect(() => {
-    // This now determines which user is logged in.
     const loggedInUserId = localStorage.getItem('loggedInUserId');
     if (!loggedInUserId) {
-      // If no one is logged in, you might want to redirect or show a guest view.
-      // For this prototype, we'll just not show user-specific data.
       return;
     };
 
     const currentUser = users.find(u => u.id === loggedInUserId);
 
     const updateUserData = () => {
-      // Prioritize localStorage for new users, then fall back to mock data for existing ones.
       const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
       const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
       
@@ -50,13 +46,20 @@ export default function HomePage() {
 
     updateUserData();
     updateNoteData();
+    
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === `user-name-${loggedInUserId}` || event.key === `user-avatar-${loggedInUserId}`) {
+            updateUserData();
+        }
+        if (event.key === 'update-note-text') {
+            updateNoteData();
+        }
+    };
 
-    // Listen for updates to refresh
-    window.addEventListener('avatar-updated', updateUserData);
-    // You could create a similar event for note updates if needed
+    window.addEventListener('storage', handleStorageChange);
     
     return () => {
-        window.removeEventListener('avatar-updated', updateUserData);
+        window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

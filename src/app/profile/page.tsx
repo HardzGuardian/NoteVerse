@@ -115,8 +115,6 @@ export default function ProfilePage() {
       ].filter(Boolean) as string[];
 
       if (changes.length > 0) {
-        window.dispatchEvent(new Event('avatar-updated'));
-        
         let description = "Your " + changes.join(', ').replace(/, ([^,]*)$/, ' and $1') + ` has${changes.length > 1 ? 've' : ''} been updated.`;
 
         toast({

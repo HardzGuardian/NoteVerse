@@ -99,7 +99,6 @@ export default function AdminProfilePage() {
       }
       
       if (changesMade) {
-        window.dispatchEvent(new Event('avatar-updated'));
         toast({
           title: "Profile Updated",
           description: toastDescription,

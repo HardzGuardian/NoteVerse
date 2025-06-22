@@ -68,9 +68,15 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
 
     updateAdminDetails();
 
-    window.addEventListener('avatar-updated', updateAdminDetails);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === `user-avatar-${adminUserId}` || event.key === `user-name-${adminUserId}`) {
+        updateAdminDetails();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-        window.removeEventListener('avatar-updated', updateAdminDetails);
+      window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

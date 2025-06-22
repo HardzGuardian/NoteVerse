@@ -14,13 +14,7 @@ export default function UsersPage() {
   const [displayUsers, setDisplayUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // This simulates the identity of the currently logged-in user.
-  // In a real app, this would come from an authentication context.
-  const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
-
   useEffect(() => {
-    setLoggedInUserId(localStorage.getItem('loggedInUserId'));
-    
     const loadUsers = () => {
         setIsLoading(true);
         const hideNamePreference = localStorage.getItem('user-hide-name');
@@ -54,11 +48,15 @@ export default function UsersPage() {
 
     loadUsers();
 
-    window.addEventListener('avatar-updated', loadUsers);
-    window.addEventListener('user-list-updated', loadUsers);
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'all-users' || event.key === 'user-hide-name' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
+            loadUsers();
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-        window.removeEventListener('avatar-updated', loadUsers);
-        window.removeEventListener('user-list-updated', loadUsers);
+        window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

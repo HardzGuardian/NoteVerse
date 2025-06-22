@@ -58,11 +58,15 @@ export default function UserManagementPage() {
 
     loadUsers();
 
-    window.addEventListener('avatar-updated', loadUsers);
-    window.addEventListener('user-list-updated', loadUsers);
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
+            loadUsers();
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     return () => {
-        window.removeEventListener('avatar-updated', loadUsers);
-        window.removeEventListener('user-list-updated', loadUsers);
+        window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 
@@ -99,9 +103,6 @@ export default function UserManagementPage() {
         return;
     }
 
-    const originalName = userToEdit.name;
-    let photoUpdated = false;
-
     const updatedUsers = users.map(u => 
         u.id === userToEdit.id 
         ? { ...u, 
@@ -112,21 +113,16 @@ export default function UserManagementPage() {
           } 
         : u
     );
-    setUsers(updatedUsers);
+    // Don't setUsers directly, let the storage event handle it for consistency
     localStorage.setItem('all-users', JSON.stringify(updatedUsers));
 
     if (avatarPreview) {
       localStorage.setItem(`user-avatar-${userToEdit.id}`, avatarPreview);
-      photoUpdated = true;
     }
     localStorage.setItem(`user-name-${userToEdit.id}`, editedUserData.name);
     localStorage.setItem(`user-role-${userToEdit.id}`, editedUserData.role);
     localStorage.setItem(`user-canChangeName-${userToEdit.id}`, JSON.stringify(editedUserData.canChangeName));
     
-    if (photoUpdated || editedUserData.name !== originalName) {
-        window.dispatchEvent(new Event('avatar-updated'));
-    }
-
     toast({
       title: "User Updated",
       description: `${editedUserData.name || userToEdit.email.split('@')[0]}'s details have been updated.`,
@@ -137,10 +133,8 @@ export default function UserManagementPage() {
   const handleDeleteUser = () => {
     if (!userToDelete) return;
     const updatedUsers = users.filter(u => u.id !== userToDelete.id);
-    setUsers(updatedUsers);
     localStorage.setItem('all-users', JSON.stringify(updatedUsers));
-    window.dispatchEvent(new Event('user-list-updated'));
-
+    
     toast({
       variant: "destructive",
       title: "User Deleted",
@@ -170,9 +164,7 @@ export default function UserManagementPage() {
     };
     
     const updatedUsers = [...users, newUser];
-    setUsers(updatedUsers);
     localStorage.setItem('all-users', JSON.stringify(updatedUsers));
-    window.dispatchEvent(new Event('user-list-updated'));
 
     toast({
         title: "User Added",

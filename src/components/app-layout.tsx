@@ -50,7 +50,6 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const [userName, setUserName] = useState("U");
 
   useEffect(() => {
-    // This effect runs on mount and when the custom event is dispatched
     const updateAvatarAndName = () => {
         const loggedInUserId = localStorage.getItem('loggedInUserId');
         if (!loggedInUserId) return;
@@ -69,11 +68,19 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
 
     updateAvatarAndName();
 
-    // Listen for the custom event to update the avatar
-    window.addEventListener('avatar-updated', updateAvatarAndName);
+    const handleStorageChange = (event: StorageEvent) => {
+        const loggedInUserId = localStorage.getItem('loggedInUserId');
+        if (!loggedInUserId) return;
+
+        if (event.key === `user-avatar-${loggedInUserId}` || event.key === `user-name-${loggedInUserId}`) {
+            updateAvatarAndName();
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
 
     return () => {
-        window.removeEventListener('avatar-updated', updateAvatarAndName);
+        window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

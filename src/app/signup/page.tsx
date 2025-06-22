@@ -62,8 +62,6 @@ export default function SignupPage() {
       localStorage.setItem(`user-role-${newUserId}`, 'Student');
       localStorage.setItem(`user-canChangeName-${newUserId}`, 'true');
       
-      window.dispatchEvent(new Event('user-list-updated'));
-
       toast({
         title: "Account Created!",
         description: "Welcome to NoteVerse. You are now being logged in.",
