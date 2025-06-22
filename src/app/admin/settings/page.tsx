@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,20 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Image as ImageIcon } from "lucide-react";
 
+const DEFAULT_BG = "https://placehold.co/1920x1080.png";
+
 export default function AdminSettingsPage() {
   const { toast } = useToast();
-  const [preview, setPreview] = useState<string | null>("https://placehold.co/1920x1080.png");
+  const [preview, setPreview] = useState<string | null>(DEFAULT_BG);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const savedBg = localStorage.getItem("login-background-image");
+    if (savedBg) {
+      setPreview(savedBg);
+    }
+    setMounted(true);
+  }, []);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -21,7 +33,7 @@ export default function AdminSettingsPage() {
         setPreview(reader.result as string);
         toast({
           title: "Image Selected",
-          description: `${file.name} is ready to be set as the background.`,
+          description: `${file.name} is ready to be saved.`,
         });
       };
       reader.readAsDataURL(file);
@@ -29,10 +41,13 @@ export default function AdminSettingsPage() {
   };
   
   const handleSaveChanges = () => {
-    toast({
-        title: "Success!",
-        description: "Your settings have been saved. The login page background will be updated.",
+    if (preview) {
+      localStorage.setItem("login-background-image", preview);
+      toast({
+          title: "Success!",
+          description: "Your settings have been saved. The login page background will be updated.",
       });
+    }
   }
 
   return (
@@ -52,7 +67,9 @@ export default function AdminSettingsPage() {
                 <CardDescription>Upload a new background image for the student and admin login pages.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                  {preview ? (
+                  {!mounted ? (
+                       <div className="w-full h-48 rounded-md bg-muted animate-pulse" />
+                  ) : preview ? (
                        <div className="relative w-full h-48 rounded-md overflow-hidden border">
                            <Image src={preview} alt="Background Preview" layout="fill" objectFit="cover" data-ai-hint="abstract background" />
                        </div>

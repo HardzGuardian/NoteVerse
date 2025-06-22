@@ -1,7 +1,8 @@
+
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,12 +11,22 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield } from "lucide-react";
 
+const DEFAULT_BG = "https://placehold.co/1920x1080.png";
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loginAttempts, setLoginAttempts] = useState(0);
   const router = useRouter();
   const { toast } = useToast();
+  const [background, setBackground] = useState(DEFAULT_BG);
+
+  useEffect(() => {
+    const savedBg = localStorage.getItem("login-background-image");
+    if (savedBg) {
+      setBackground(savedBg);
+    }
+  }, []);
 
   const handleLogin = () => {
     if (email === "sagarsalunkhe98@gmail.com" && password === "Hardz@1998") {
@@ -31,7 +42,7 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }} data-ai-hint="abstract background">
+    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${background}')` }} data-ai-hint="abstract background">
       <div className="flex min-h-screen flex-col items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
         <div className="w-full max-w-md">
           <Card className="shadow-2xl">
