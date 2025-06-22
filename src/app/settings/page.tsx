@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -9,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
+import { users as initialUsers, User } from "@/lib/data";
 
 const fonts = [
   { name: 'Default (PT Sans)', value: 'font-body' },
@@ -29,8 +29,15 @@ export default function SettingsPage() {
     const savedFont = localStorage.getItem("font") || "font-body";
     setFont(savedFont);
 
-    const namePreference = localStorage.getItem("user-hide-name");
-    setHideMyName(namePreference ? JSON.parse(namePreference) : true);
+    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    if (loggedInUserId) {
+        const storedUsersRaw = localStorage.getItem('all-users');
+        const allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
+        const currentUser = allUsers.find(u => u.id === loggedInUserId);
+        if (currentUser) {
+            setHideMyName(currentUser.displayNameHidden);
+        }
+    }
 
     setMounted(true);
     setInitialLoad(false);
@@ -48,7 +55,16 @@ export default function SettingsPage() {
   
   useEffect(() => {
     if (mounted && !initialLoad) {
-      localStorage.setItem("user-hide-name", JSON.stringify(hideMyName));
+      const loggedInUserId = localStorage.getItem('loggedInUserId');
+      if (loggedInUserId) {
+        const storedUsersRaw = localStorage.getItem('all-users');
+        let allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
+        allUsers = allUsers.map(user => 
+            user.id === loggedInUserId ? { ...user, displayNameHidden: hideMyName } : user
+        );
+        localStorage.setItem('all-users', JSON.stringify(allUsers));
+      }
+
       toast({
           title: "Privacy Setting Updated",
           description: `Your name and photo are now ${hideMyName ? 'hidden from' : 'visible to'} other users.`,

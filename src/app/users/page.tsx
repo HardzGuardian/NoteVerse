@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { users as initialUsers, User } from "@/lib/data";
+import { User } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Users as UsersIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,27 +16,16 @@ export default function UsersPage() {
   useEffect(() => {
     const loadUsers = () => {
         setIsLoading(true);
-        const hideNamePreference = localStorage.getItem('user-hide-name');
-        const shouldHideName = hideNamePreference ? JSON.parse(hideNamePreference) : true;
-        
         const storedUsersRaw = localStorage.getItem('all-users');
-        const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
-
-        const currentLoggedInUserId = localStorage.getItem('loggedInUserId');
+        const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
 
         const processedUsers = sourceUsers.map(user => {
             const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
             const storedName = localStorage.getItem(`user-name-${user.id}`);
-            let userIsHidden = user.displayNameHidden;
-
-            if (user.id === currentLoggedInUserId) {
-                userIsHidden = shouldHideName;
-            }
             
             return { 
                 ...user,
                 name: storedName || user.name,
-                displayNameHidden: userIsHidden,
                 avatar: storedAvatar || user.avatar,
             };
         });
@@ -49,7 +37,7 @@ export default function UsersPage() {
     loadUsers();
 
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'all-users' || event.key === 'user-hide-name' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
+        if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
             loadUsers();
         }
     };
