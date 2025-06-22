@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -23,11 +24,16 @@ export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [background, setBackground] = useState(DEFAULT_BG);
+  const [overlayOpacity, setOverlayOpacity] = useState(50);
 
   useEffect(() => {
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setBackground(savedBg);
+    }
+    const savedOpacity = localStorage.getItem("login-overlay-opacity");
+    if (savedOpacity) {
+      setOverlayOpacity(Number(savedOpacity));
     }
   }, []);
 
@@ -52,7 +58,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${background}')` }} data-ai-hint="abstract background">
-      <div className="flex min-h-screen flex-col items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+      <div style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} className="flex min-h-screen flex-col items-center justify-center p-4 backdrop-blur-sm">
         <div className="w-full max-w-md">
           <Card className="shadow-2xl">
             <CardHeader className="text-center">

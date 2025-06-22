@@ -9,18 +9,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Image as ImageIcon } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
 
 const DEFAULT_BG = "https://placehold.co/1920x1080.png";
 
 export default function AdminSettingsPage() {
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(DEFAULT_BG);
+  const [overlayOpacity, setOverlayOpacity] = useState(50);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setPreview(savedBg);
+    }
+    const savedOpacity = localStorage.getItem("login-overlay-opacity");
+    if (savedOpacity) {
+      setOverlayOpacity(Number(savedOpacity));
     }
     setMounted(true);
   }, []);
@@ -43,11 +50,12 @@ export default function AdminSettingsPage() {
   const handleSaveChanges = () => {
     if (preview) {
       localStorage.setItem("login-background-image", preview);
-      toast({
-          title: "Success!",
-          description: "Your settings have been saved. The login page background will be updated.",
-      });
     }
+    localStorage.setItem("login-overlay-opacity", String(overlayOpacity));
+    toast({
+        title: "Success!",
+        description: "Your settings have been saved. The login page background will be updated.",
+    });
   }
 
   return (
@@ -64,14 +72,15 @@ export default function AdminSettingsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Login Page Background</CardTitle>
-                <CardDescription>Upload a new background image for the student and admin login pages.</CardDescription>
+                <CardDescription>Upload a new background image and adjust the overlay opacity for the login pages.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                   {!mounted ? (
                        <div className="w-full h-48 rounded-md bg-muted animate-pulse" />
                   ) : preview ? (
                        <div className="relative w-full h-48 rounded-md overflow-hidden border">
                            <Image src={preview} alt="Background Preview" layout="fill" objectFit="cover" data-ai-hint="abstract background" />
+                           <div className="absolute inset-0" style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} />
                        </div>
                   ) : (
                       <div className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-md">
@@ -79,7 +88,22 @@ export default function AdminSettingsPage() {
                           <p className="text-muted-foreground mt-2">No image selected</p>
                       </div>
                   )}
-                  <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="opacity-slider" className="flex justify-between">
+                      <span>Overlay Opacity</span>
+                      <span>{overlayOpacity}%</span>
+                    </Label>
+                    <Slider
+                      id="opacity-slider"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={[overlayOpacity]}
+                      onValueChange={(value) => setOverlayOpacity(value[0])}
+                      disabled={!mounted}
+                    />
+                  </div>
+                  <div className="flex flex-col sm:flex-row gap-2 pt-2">
                       <Input id="picture" type="file" className="hidden" onChange={handleImageUpload} accept="image/*" />
                       <Button asChild variant="outline" className="w-full sm:w-auto">
                           <label htmlFor="picture" className="cursor-pointer">
