@@ -7,21 +7,55 @@ import { useParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { semesters as allSemesters } from "@/lib/data";
+import { useToast } from "@/hooks/use-toast";
+import { semesters as allSemesters, Semester, Subject } from "@/lib/data";
 import { PlusCircle, FileText, ChevronRight, FolderOpen } from "lucide-react";
 
 export default function AdminSubjectsPage() {
   const params = useParams<{ semesterId: string }>();
   const [loading, setLoading] = useState(true);
-  const semester = allSemesters.find((s) => s.id === params.semesterId);
+  const [semester, setSemester] = useState<Semester | undefined>();
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newSubjectName, setNewSubjectName] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     const timer = setTimeout(() => {
+      setSemester(allSemesters.find((s) => s.id === params.semesterId));
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [params.semesterId]);
+
+  const handleAddSubject = () => {
+    if (!newSubjectName.trim()) {
+      toast({ variant: "destructive", title: "Error", description: "Subject name cannot be empty." });
+      return;
+    }
+    if (!semester) return;
+
+    const newSubject: Subject = {
+      id: `sub${Date.now()}`,
+      name: newSubjectName,
+      pdfs: [],
+    };
+
+    const updatedSemester = {
+      ...semester,
+      subjects: [...semester.subjects, newSubject],
+    };
+
+    setSemester(updatedSemester);
+    // Note: This updates the local state for the UI. In a real app, you'd persist this change.
+
+    toast({ title: "Success", description: "New subject added." });
+    setNewSubjectName("");
+    setIsAddDialogOpen(false);
+  };
 
   if (!semester && !loading) {
     return (
@@ -44,7 +78,7 @@ export default function AdminSubjectsPage() {
           <h2 className="text-2xl font-bold tracking-tight">Manage Subjects</h2>
           <p className="text-muted-foreground">Select a subject to manage its notes and exam papers.</p>
         </div>
-        <Button className="bg-accent hover:bg-accent/90">
+        <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Subject
         </Button>
       </div>
@@ -86,12 +120,37 @@ export default function AdminSubjectsPage() {
                 <CardDescription>Add the first subject for this semester.</CardDescription>
             </CardHeader>
             <CardContent>
-                <Button className="bg-accent hover:bg-accent/90">
+                <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddDialogOpen(true)}>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add First Subject
                 </Button>
             </CardContent>
         </Card>
       )}
+
+      {/* Add Subject Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New Subject</DialogTitle>
+            <DialogDescription>Enter a name for the new subject.</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <Label htmlFor="subject-name">Subject Name</Label>
+            <Input 
+              id="subject-name" 
+              value={newSubjectName}
+              onChange={(e) => setNewSubjectName(e.target.value)}
+              placeholder="e.g., Advanced Algorithms"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddSubject}>Add Subject</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </AdminLayout>
   );
 }
