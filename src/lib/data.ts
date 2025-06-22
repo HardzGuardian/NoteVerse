@@ -24,13 +24,14 @@ export type User = {
   avatar: string;
   email: string;
   role: 'Admin' | 'Student' | 'Uploader';
+  status: 'online' | 'offline';
 };
 
 export const users: User[] = [
-  { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin' },
-  { id: 'usr2', name: 'Jane Doe', avatar: 'https://placehold.co/100x100.png', email: 'jane.doe@example.com', role: 'Student' },
-  { id: 'usr3', name: 'John Smith', avatar: 'https://placehold.co/100x100.png', email: 'john.smith@example.com', role: 'Student' },
-  { id: 'usr4', name: 'Professor Oak', avatar: 'https://placehold.co/100x100.png', email: 'prof.oak@example.com', role: 'Uploader' },
+  { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online' },
+  { id: 'usr2', name: 'Jane Doe', avatar: 'https://placehold.co/100x100.png', email: 'jane.doe@example.com', role: 'Student', status: 'online' },
+  { id: 'usr3', name: 'John Smith', avatar: 'https://placehold.co/100x100.png', email: 'john.smith@example.com', role: 'Student', status: 'offline' },
+  { id: 'usr4', name: 'Professor Oak', avatar: 'https://placehold.co/100x100.png', email: 'prof.oak@example.com', role: 'Uploader', status: 'online' },
 ];
 
 export const semesters: Semester[] = [
