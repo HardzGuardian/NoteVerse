@@ -14,11 +14,26 @@ export default function LatestUpdatePage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const savedNote = localStorage.getItem('update-note-text');
-    const savedDate = localStorage.getItem('update-note-date');
-    setNoteText(savedNote || updateNote.text);
-    setLastUpdated(savedDate || updateNote.lastUpdated);
+    const updateNoteContent = () => {
+      const savedNote = localStorage.getItem('update-note-text');
+      const savedDate = localStorage.getItem('update-note-date');
+      setNoteText(savedNote || updateNote.text);
+      setLastUpdated(savedDate || updateNote.lastUpdated);
+    };
+
+    updateNoteContent();
     setIsMounted(true);
+
+    const handleStorageChange = (event: StorageEvent) => {
+        if (event.key === 'update-note-text' || event.key === 'update-note-date') {
+            updateNoteContent();
+        }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (

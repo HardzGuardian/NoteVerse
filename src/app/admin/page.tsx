@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -32,10 +33,16 @@ export default function AdminHomePage() {
 
     updateAdminData();
 
-    window.addEventListener('avatar-updated', updateAdminData);
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === `user-name-${adminUserId}` || event.key === `user-avatar-${adminUserId}`) {
+        updateAdminData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
     
     return () => {
-        window.removeEventListener('avatar-updated', updateAdminData);
+        window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
 

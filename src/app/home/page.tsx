@@ -39,9 +39,7 @@ export default function HomePage() {
     
     const updateNoteData = () => {
         const savedNote = localStorage.getItem('update-note-text');
-        if (savedNote) {
-            setNoteText(savedNote);
-        }
+        setNoteText(savedNote || updateNote.text);
     }
 
     updateUserData();

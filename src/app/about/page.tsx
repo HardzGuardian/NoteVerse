@@ -65,13 +65,28 @@ export default function AboutPage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const savedContent = localStorage.getItem('about-content');
-    setContent(savedContent || aboutContent);
+    const updateAboutContent = () => {
+      const savedContent = localStorage.getItem('about-content');
+      setContent(savedContent || aboutContent);
 
-    const savedSocials = localStorage.getItem('social-links');
-    setSocials(savedSocials ? JSON.parse(savedSocials) : defaultSocials);
+      const savedSocials = localStorage.getItem('social-links');
+      setSocials(savedSocials ? JSON.parse(savedSocials) : defaultSocials);
+    };
 
+    updateAboutContent();
     setIsMounted(true);
+
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'about-content' || event.key === 'social-links') {
+        updateAboutContent();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
   
   const visibleLinks = socials.filter(link => link.enabled && link.url);
