@@ -33,7 +33,7 @@ export default function UserManagementPage() {
   });
 
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
-  const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'Student' as UserRole });
+  const [newUserData, setNewUserData] = useState({ name: '', email: '', password: '', role: 'Student' as UserRole });
   const { toast } = useToast();
 
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
@@ -151,14 +151,16 @@ export default function UserManagementPage() {
   };
   
   const handleAddNewUser = () => {
-    if (!newUserData.name || !newUserData.email) {
+    if (!newUserData.name || !newUserData.email || !newUserData.password) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Name and email are required.",
+        description: "Name, email, and password are required.",
       });
       return;
     }
+    // In a real app, this password would be securely sent to a backend
+    // to be hashed and stored, not kept in frontend state.
     const newUser: User = {
         id: `usr${users.length + 1}`,
         name: newUserData.name,
@@ -175,7 +177,7 @@ export default function UserManagementPage() {
         description: `${newUser.name} has been added as a ${newUser.role}.`,
     });
     setIsAddUserDialogOpen(false);
-    setNewUserData({ name: '', email: '', role: 'Student' });
+    setNewUserData({ name: '', email: '', password: '', role: 'Student' });
   };
 
   const roleVariant = (role: UserRole) => {
@@ -283,6 +285,16 @@ export default function UserManagementPage() {
                     onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
                 />
             </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+              />
+            </div>
              <div className="space-y-2">
               <Label htmlFor="role-select-add">Role</Label>
               <Select value={newUserData.role} onValueChange={(value: UserRole) => setNewUserData({...newUserData, role: value})}>
@@ -385,7 +397,7 @@ export default function UserManagementPage() {
               </AlertDialogHeader>
               <AlertDialogFooter>
                   <AlertDialogCancel onClick={() => setUserToDelete(null)}>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteUser}>Continue</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDeleteUser} className={buttonVariants({ variant: "destructive" })}>Delete</AlertDialogAction>
               </AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
@@ -394,3 +406,4 @@ export default function UserManagementPage() {
   );
 }
 
+    
