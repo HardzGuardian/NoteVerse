@@ -8,19 +8,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { aboutContent } from "@/lib/data";
+import { aboutContent, socialLinks as initialSocials } from "@/lib/data";
 import { Loader2, Save, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 export default function AdminEditAboutPage() {
   const { toast } = useToast();
   const [content, setContent] = useState(aboutContent);
   const [isLoading, setIsLoading] = useState(false);
-  const [socials, setSocials] = useState({
-    facebook: "",
-    twitter: "",
-    instagram: "",
-    youtube: "",
-  });
+  const [socials, setSocials] = useState(initialSocials);
 
   const handleSave = () => {
     setIsLoading(true);
