@@ -31,7 +31,7 @@ export type User = {
 };
 
 export type SocialLink = {
-  id: 'facebook' | 'twitter' | 'instagram' | 'youtube' | 'whatsapp' | 'telegram';
+  id: 'facebook' | 'twitter' | 'instagram' | 'youtube' | 'whatsapp' | 'telegram' | 'steam';
   name: string;
   url: string;
   enabled: boolean;
@@ -116,4 +116,5 @@ export const socialLinks: SocialLink[] = [
     { id: 'youtube', name: 'YouTube', url: "", enabled: false, placeholder: 'https://youtube.com/your-channel' },
     { id: 'whatsapp', name: 'WhatsApp', url: "", enabled: false, placeholder: 'https://wa.me/your-number' },
     { id: 'telegram', name: 'Telegram', url: "", enabled: false, placeholder: 'https://t.me/your-channel' },
+    { id: 'steam', name: 'Steam', url: "", enabled: false, placeholder: 'https://steamcommunity.com/id/your-profile' },
 ];

@@ -41,6 +41,26 @@ const TelegramIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const SteamIcon = (props: React.SVGProps<SVGSVGElement>) => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
+        <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/>
+        <path d="M15.5 15.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+        <path d="M15.5 15.5L12 12l-4.5 4.5"/>
+        <path d="M12 12l2-2.5-3-2.5"/>
+    </svg>
+);
+
 const ICONS: Record<string, React.ReactElement> = {
     facebook: <Facebook className="h-7 w-7" />,
     instagram: <Instagram className="h-7 w-7" />,
@@ -48,6 +68,7 @@ const ICONS: Record<string, React.ReactElement> = {
     youtube: <Youtube className="h-7 w-7" />,
     whatsapp: <WhatsappIcon className="h-7 w-7" />,
     telegram: <TelegramIcon className="h-7 w-7" />,
+    steam: <SteamIcon className="h-7 w-7" />,
 };
 
 export default function AboutPage() {
