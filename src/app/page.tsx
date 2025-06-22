@@ -122,7 +122,7 @@ export default function LoginPage() {
                   ) : (
                     <GoogleIcon />
                   )}
-                  {isGoogleLoading ? "Signing in..." : "Login with Google"}
+                  {isGoogleLoading ? "Signing in..." : "Continue with Google"}
                 </Button>
 
                 <div className="relative">
