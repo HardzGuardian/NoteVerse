@@ -69,7 +69,7 @@ export default function UserManagementPage() {
 
     toast({
       title: "User Updated",
-      description: `${userToEdit.name}'s details have been updated.`,
+      description: `${userToEdit.name || userToEdit.email.split('@')[0]}'s details have been updated.`,
     });
     setUserToEdit(null);
   };
@@ -80,7 +80,7 @@ export default function UserManagementPage() {
     toast({
       variant: "destructive",
       title: "User Deleted",
-      description: `${userToDelete.name} has been removed.`,
+      description: `${userToDelete.name || userToDelete.email.split('@')[0]} has been removed.`,
     });
     setUserToDelete(null);
   };
@@ -151,9 +151,9 @@ export default function UserManagementPage() {
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage src={user.avatar} data-ai-hint="person avatar" />
-                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                        <AvatarFallback>{(user.name || user.email).charAt(0)}</AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{user.name}</span>
+                      <span className="font-medium">{user.name || user.email.split('@')[0]}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-muted-foreground">{user.email}</TableCell>
@@ -243,7 +243,7 @@ export default function UserManagementPage() {
       <Dialog open={!!userToEdit} onOpenChange={(isOpen) => !isOpen && setUserToEdit(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit: {userToEdit?.name}</DialogTitle>
+            <DialogTitle>Edit: {userToEdit?.name || userToEdit?.email.split('@')[0]}</DialogTitle>
             <DialogDescription>
               Modify user details and permissions.
             </DialogDescription>

@@ -51,14 +51,14 @@ export default function UsersPage() {
     if (user.displayNameHidden) {
       return `${user.role} #${user.id.replace(/\D/g, "")}`;
     }
-    return user.name;
+    return user.name || user.email.split('@')[0];
   };
 
   const getAvatarFallback = (user: User) => {
     if (user.displayNameHidden) {
       return user.role.charAt(0);
     }
-    return user.name.charAt(0);
+    return (user.name || user.email).charAt(0);
   };
   
   return (

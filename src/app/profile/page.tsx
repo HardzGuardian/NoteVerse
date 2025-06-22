@@ -17,7 +17,7 @@ const currentUser = users.find(u => u.id === loggedInUserId);
 
 export default function ProfilePage() {
   const { toast } = useToast();
-  const [name, setName] = useState(currentUser?.name || "");
+  const [name, setName] = useState(currentUser ? (currentUser.name || currentUser.email.split('@')[0]) : "");
   const [isLoading, setIsLoading] = useState(false);
   
   const canChangeName = currentUser?.canChangeName ?? false;
