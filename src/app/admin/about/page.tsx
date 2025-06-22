@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { aboutContent, socialLinks as initialSocials, aboutPageSettings as initialAboutSettings } from "@/lib/data";
+import { aboutContent, socialLinks as initialSocials, SocialLink } from "@/lib/data";
 import { Loader2, Save, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -47,13 +47,29 @@ const TelegramIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const socialIcons: Record<SocialLink['id'], React.ComponentType<React.SVGProps<SVGSVGElement>>> = {
+    facebook: Facebook,
+    instagram: Instagram,
+    twitter: Twitter,
+    youtube: Youtube,
+    whatsapp: WhatsappIcon,
+    telegram: TelegramIcon,
+};
+
 
 export default function AdminEditAboutPage() {
   const { toast } = useToast();
   const [content, setContent] = useState(aboutContent);
   const [isLoading, setIsLoading] = useState(false);
-  const [socials, setSocials] = useState(initialSocials);
-  const [showSocials, setShowSocials] = useState(initialAboutSettings.showSocialLinks);
+  const [socials, setSocials] = useState<SocialLink[]>(initialSocials);
+
+  const handleSocialChange = (id: SocialLink['id'], key: 'url' | 'enabled', value: string | boolean) => {
+    setSocials(currentSocials => 
+        currentSocials.map(social => 
+            social.id === id ? { ...social, [key]: value } : social
+        )
+    );
+  };
 
   const handleSave = () => {
     setIsLoading(true);
@@ -61,7 +77,6 @@ export default function AdminEditAboutPage() {
       // In a real app, you would save this to a database.
       console.log("Saving content:", content);
       console.log("Saving socials:", socials);
-      console.log("Saving show socials:", showSocials);
       setIsLoading(false);
       toast({
         title: "Success!",
@@ -91,68 +106,39 @@ export default function AdminEditAboutPage() {
                 onChange={(e) => setContent(e.target.value)}
               />
             </div>
-            
-            <div className="flex items-center justify-between rounded-lg border p-4">
-              <div>
-                <Label htmlFor="show-socials" className="text-base font-medium">Show Social Links</Label>
-                <p className="text-sm text-muted-foreground">Display social media links on the About page.</p>
-              </div>
-              <Switch
-                id="show-socials"
-                checked={showSocials}
-                onCheckedChange={setShowSocials}
-              />
-            </div>
 
-            {showSocials && (
-              <div className="space-y-4 pt-4">
-                <h3 className="text-lg font-medium text-foreground">Social Links</h3>
-                <div className="space-y-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="facebook">Facebook</Label>
-                    <div className="flex items-center gap-2">
-                      <Facebook className="h-5 w-5 text-muted-foreground" />
-                      <Input id="facebook" placeholder="https://facebook.com/your-page" value={socials.facebook} onChange={e => setSocials({...socials, facebook: e.target.value})} />
+            <div className="space-y-4 pt-4">
+              <h3 className="text-lg font-medium text-foreground">Social Links</h3>
+              <p className="text-sm text-muted-foreground">Enable and provide URLs for the social media links you want to display on the public About page.</p>
+              <div className="space-y-3">
+                {socials.map(social => {
+                  const Icon = socialIcons[social.id];
+                  return (
+                    <div key={social.id} className="flex items-center gap-4 rounded-lg border p-3.5">
+                      <Icon className="h-6 w-6 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-grow space-y-1">
+                          <Label htmlFor={social.id} className="font-medium">{social.name}</Label>
+                          <Input 
+                            id={social.id} 
+                            placeholder={social.placeholder} 
+                            value={social.url}
+                            onChange={(e) => handleSocialChange(social.id, 'url', e.target.value)}
+                            disabled={!social.enabled}
+                            className="text-sm"
+                          />
+                      </div>
+                      <Switch
+                          id={`switch-${social.id}`}
+                          checked={social.enabled}
+                          onCheckedChange={(checked) => handleSocialChange(social.id, 'enabled', checked)}
+                          aria-label={`Enable ${social.name} link`}
+                      />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="instagram">Instagram</Label>
-                    <div className="flex items-center gap-2">
-                      <Instagram className="h-5 w-5 text-muted-foreground" />
-                      <Input id="instagram" placeholder="https://instagram.com/your-handle" value={socials.instagram} onChange={e => setSocials({...socials, instagram: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter</Label>
-                    <div className="flex items-center gap-2">
-                      <Twitter className="h-5 w-5 text-muted-foreground" />
-                      <Input id="twitter" placeholder="https://twitter.com/your-handle" value={socials.twitter} onChange={e => setSocials({...socials, twitter: e.target.value})} />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="youtube">YouTube</Label>
-                    <div className="flex items-center gap-2">
-                      <Youtube className="h-5 w-5 text-muted-foreground" />
-                      <Input id="youtube" placeholder="https://youtube.com/your-channel" value={socials.youtube} onChange={e => setSocials({...socials, youtube: e.target.value})} />
-                    </div>
-                  </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="whatsapp">WhatsApp</Label>
-                    <div className="flex items-center gap-2">
-                      <WhatsappIcon className="h-5 w-5 text-muted-foreground" />
-                      <Input id="whatsapp" placeholder="https://wa.me/your-number" value={socials.whatsapp} onChange={e => setSocials({...socials, whatsapp: e.target.value})} />
-                    </div>
-                  </div>
-                   <div className="space-y-2">
-                    <Label htmlFor="telegram">Telegram</Label>
-                    <div className="flex items-center gap-2">
-                      <TelegramIcon className="h-5 w-5 text-muted-foreground" />
-                      <Input id="telegram" placeholder="https://t.me/your-channel" value={socials.telegram} onChange={e => setSocials({...socials, telegram: e.target.value})} />
-                    </div>
-                  </div>
-                </div>
+                  );
+                })}
               </div>
-            )}
+            </div>
+            
             <div className="pt-2">
               <Button onClick={handleSave} disabled={isLoading} className="w-full sm:w-auto bg-accent hover:bg-accent/90">
                 {isLoading ? (

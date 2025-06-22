@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { AppLayout } from "@/components/app-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { aboutContent, socialLinks, aboutPageSettings } from "@/lib/data";
+import { aboutContent, socialLinks } from "@/lib/data";
 import { Info, Facebook, Instagram, Twitter, Youtube } from "lucide-react";
 
 const WhatsappIcon = (props: React.SVGProps<SVGSVGElement>) => (
@@ -41,7 +41,18 @@ const TelegramIcon = (props: React.SVGProps<SVGSVGElement>) => (
     </svg>
 );
 
+const ICONS: Record<string, React.ReactElement> = {
+    facebook: <Facebook className="h-7 w-7" />,
+    instagram: <Instagram className="h-7 w-7" />,
+    twitter: <Twitter className="h-7 w-7" />,
+    youtube: <Youtube className="h-7 w-7" />,
+    whatsapp: <WhatsappIcon className="h-7 w-7" />,
+    telegram: <TelegramIcon className="h-7 w-7" />,
+};
+
 export default function AboutPage() {
+  const visibleLinks = socialLinks.filter(link => link.enabled && link.url);
+
   return (
     <AppLayout pageTitle="About NoteVerse">
       <div className="flex justify-center">
@@ -60,44 +71,14 @@ export default function AboutPage() {
           <CardContent className="prose dark:prose-invert max-w-none text-base text-card-foreground/90 leading-relaxed">
             <p>{aboutContent}</p>
           </CardContent>
-          {aboutPageSettings.showSocialLinks && (socialLinks.facebook || socialLinks.instagram || socialLinks.twitter || socialLinks.youtube || socialLinks.whatsapp || socialLinks.telegram) && (
+          {visibleLinks.length > 0 && (
              <CardFooter className="flex justify-center gap-6 pt-6">
-                {socialLinks.facebook && (
-                    <Link href={socialLinks.facebook} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <Facebook className="h-7 w-7" />
-                        <span className="sr-only">Facebook</span>
+                {visibleLinks.map(link => (
+                    <Link key={link.id} href={link.url} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
+                        {ICONS[link.id]}
+                        <span className="sr-only">{link.name}</span>
                     </Link>
-                )}
-                {socialLinks.instagram && (
-                    <Link href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <Instagram className="h-7 w-7" />
-                        <span className="sr-only">Instagram</span>
-                    </Link>
-                )}
-                {socialLinks.twitter && (
-                    <Link href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <Twitter className="h-7 w-7" />
-                        <span className="sr-only">Twitter</span>
-                    </Link>
-                )}
-                {socialLinks.youtube && (
-                    <Link href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <Youtube className="h-7 w-7" />
-                        <span className="sr-only">YouTube</span>
-                    </Link>
-                )}
-                {socialLinks.whatsapp && (
-                    <Link href={socialLinks.whatsapp} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <WhatsappIcon className="h-7 w-7" />
-                        <span className="sr-only">WhatsApp</span>
-                    </Link>
-                )}
-                 {socialLinks.telegram && (
-                    <Link href={socialLinks.telegram} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-primary transition-colors">
-                        <TelegramIcon className="h-7 w-7" />
-                        <span className="sr-only">Telegram</span>
-                    </Link>
-                )}
+                ))}
             </CardFooter>
           )}
         </Card>
