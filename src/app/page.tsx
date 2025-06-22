@@ -29,14 +29,8 @@ export default function LoginPage() {
   const [background, setBackground] = useState(DEFAULT_BG);
   const [overlayOpacity, setOverlayOpacity] = useState(50);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [isFirebaseReady, setIsFirebaseReady] = useState(false);
 
   useEffect(() => {
-    // Check if Firebase was initialized correctly on the client side.
-    if (auth) {
-      setIsFirebaseReady(true);
-    }
-
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "login-background-image" && e.newValue) {
         setBackground(e.newValue);
@@ -122,7 +116,7 @@ export default function LoginPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isGoogleLoading || !isFirebaseReady}>
+                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
                   {isGoogleLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
