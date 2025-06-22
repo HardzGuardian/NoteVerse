@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -39,7 +40,7 @@ export default function SubjectsPage({ params }: { params: { semesterId: string 
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Subjects</h2>
-          <p className="text-muted-foreground">Select a subject to view notes.</p>
+          <p className="text-muted-foreground">Select a subject to view its notes and exam papers.</p>
         </div>
       </div>
 

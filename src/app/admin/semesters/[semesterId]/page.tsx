@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -39,7 +40,7 @@ export default function AdminSubjectsPage({ params }: { params: { semesterId: st
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Manage Subjects</h2>
-          <p className="text-muted-foreground">Select a subject to manage its notes.</p>
+          <p className="text-muted-foreground">Select a subject to manage its notes and exam papers.</p>
         </div>
         <Button className="bg-accent hover:bg-accent/90">
           <PlusCircle className="mr-2 h-4 w-4" /> Add Subject

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -29,7 +30,7 @@ export default function SemestersPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Your Semesters</h2>
-          <p className="text-muted-foreground">Select a semester to view subjects.</p>
+          <p className="text-muted-foreground">Select a semester to view its subjects, notes, and exam papers.</p>
         </div>
         <div className="flex gap-2">
             <Button variant="outline" onClick={refreshData}><RefreshCw className="mr-2 h-4 w-4"/> Refresh</Button>
