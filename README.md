@@ -63,29 +63,50 @@ Follow these instructions to get a copy of the project up and running on your lo
 
     Open [http://localhost:9002](http://localhost:9002) (or your configured port) with your browser to see the result.
 
-## Deployment
+## Deployment to Firebase App Hosting
 
-This project is configured to be deployed with **Firebase App Hosting**.
+This project is configured and ready to be deployed live on the web using **Firebase App Hosting**. Follow these steps carefully to launch your application.
 
-1.  **Login to Firebase:**
-    If you haven't already, log in to your Firebase account through the command line:
+### Step 1: Login to Firebase
+
+If you haven't already, you need to log into your Firebase account through the command line. This connects your computer to Firebase.
+
+1.  Open your terminal or command prompt.
+2.  Run the following command:
     ```bash
     firebase login
     ```
+3.  Your web browser will open, asking you to sign in with your Google account and grant permissions to the Firebase CLI.
 
-2.  **Initialize App Hosting:**
-    Run the `init` command to connect your local project to your Firebase project.
+### Step 2: Connect Your Project to Firebase
+
+Next, you need to link your local project folder to the Firebase project you created in the Firebase Console.
+
+1.  Make sure you are in the root directory of your project in the terminal.
+2.  Run the initialization command:
     ```bash
     firebase init apphosting
     ```
-    Follow the prompts to select your Firebase project and configure the deployment settings. This will create the necessary backend resources in your project.
+3.  The command line will ask you a few questions:
+    *   **"Select a Firebase project"**: Use the arrow keys to choose the Firebase project you set up for this app.
+    *   **"Specify a backend name"**: You can press Enter to accept the default name (`noteverse-backend`).
+    *   **"Choose a region"**: Select the region that is geographically closest to your users.
+    *   **"Enable automatic rollouts..."**: You can choose `No` for now.
 
-3.  **Deploy the App:**
-    Once initialized, deploy your app using the following command:
+    This process will create the necessary backend resources in your Firebase project.
+
+### Step 3: Deploy Your Application
+
+This is the final step. The command will build your Next.js application, upload it to Firebase, and make it live.
+
+1.  In the same terminal, run the deploy command:
     ```bash
     firebase apphosting:backends:deploy
     ```
-    The CLI will build your Next.js application and deploy it to App Hosting. After it finishes, it will provide you with the live URL for your app.
+2.  This process may take a few minutes. The CLI will show you the progress as it builds and deploys your app.
+3.  Once it's finished, the command line will output the **live URL** for your app. You can share this URL with anyone!
+
+That's it! Your NoteVerse application is now live on the internet. To deploy future updates, you just need to run the `firebase apphosting:backends:deploy` command again.
 
 ## Code Structure
 
