@@ -103,6 +103,12 @@ export const aboutContent = "NoteVerse is a revolutionary platform designed to s
 export const socialLinks = {
     facebook: "https://facebook.com",
     twitter: "https://twitter.com",
-    instagram: "",
+    instagram: "https://instagram.com",
     youtube: "https://youtube.com",
+    whatsapp: "https://whatsapp.com",
+    telegram: "https://t.me",
+};
+
+export const aboutPageSettings = {
+    showSocialLinks: true,
 };
