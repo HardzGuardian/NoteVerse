@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { semesters as allSemesters, Semester, Subject } from "@/lib/data";
-import { PlusCircle, FileText, ChevronRight, FolderOpen, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, FileText, FolderOpen, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function AdminSubjectsPage() {
   const params = useParams<{ semesterId: string }>();
@@ -151,7 +151,6 @@ export default function AdminSubjectsPage() {
                             </p>
                         </div>
                     </div>
-                  <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </CardContent>
               </Link>
             </Card>
