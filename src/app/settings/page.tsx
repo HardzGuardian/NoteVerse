@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -6,6 +7,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/hooks/use-toast";
 
 const fonts = [
   { name: 'Default (PT Sans)', value: 'font-body' },
@@ -16,12 +19,18 @@ const fonts = [
 ];
 
 export default function SettingsPage() {
+  const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [font, setFont] = useState('font-body');
+  const [hideMyName, setHideMyName] = useState(true);
 
   useEffect(() => {
     const savedFont = localStorage.getItem("font") || "font-body";
     setFont(savedFont);
+
+    const namePreference = localStorage.getItem("user-hide-name");
+    setHideMyName(namePreference ? JSON.parse(namePreference) : true);
+
     setMounted(true);
   }, []);
 
@@ -34,6 +43,16 @@ export default function SettingsPage() {
       localStorage.setItem("font", font);
     }
   }, [font, mounted]);
+  
+  useEffect(() => {
+    if (mounted) {
+      localStorage.setItem("user-hide-name", JSON.stringify(hideMyName));
+      toast({
+          title: "Preference Saved",
+          description: `Your name is now ${hideMyName ? 'hidden' : 'visible'} in the community tab.`,
+      })
+    }
+  }, [hideMyName, mounted, toast]);
 
   return (
     <AppLayout pageTitle="Settings">
@@ -71,7 +90,22 @@ export default function SettingsPage() {
                     <div className="w-[180px] h-10 bg-muted rounded-md animate-pulse" />
                 )}
             </div>
-            {/* Add more settings here in the future */}
+            <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                    <Label htmlFor="name-privacy" className="text-base font-medium">Privacy</Label>
+                    <p className="text-sm text-muted-foreground">Hide my name in the Community tab.</p>
+                </div>
+                 {mounted ? (
+                    <Switch
+                        id="name-privacy"
+                        checked={hideMyName}
+                        onCheckedChange={setHideMyName}
+                        aria-label="Toggle name visibility"
+                    />
+                ) : (
+                    <div className="w-11 h-6 bg-muted rounded-full animate-pulse" />
+                )}
+            </div>
           </CardContent>
         </Card>
       </div>
