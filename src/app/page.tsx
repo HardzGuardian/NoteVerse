@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Shield } from "lucide-react";
 
 export default function LoginPage() {
   return (
@@ -22,7 +22,7 @@ export default function LoginPage() {
             <CardDescription>Welcome back! Please log in to continue.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form className="space-y-4">
+            <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input id="email" type="email" placeholder="student@example.com" required />
@@ -31,10 +31,18 @@ export default function LoginPage() {
                 <Label htmlFor="password">Password</Label>
                 <Input id="password" type="password" required />
               </div>
-              <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
-                <Link href="/home">Login</Link>
-              </Button>
-            </form>
+              <div className="flex flex-col gap-3 pt-2">
+                <Button asChild className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
+                  <Link href="/home">Login as Student</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/admin">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Login as Admin
+                  </Link>
+                </Button>
+              </div>
+            </div>
             <div className="mt-4 text-center text-sm">
               Don't have an account?{" "}
               <Link href="/signup" className="underline text-primary font-medium">
