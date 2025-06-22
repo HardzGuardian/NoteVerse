@@ -12,6 +12,7 @@ import {
   User,
   Info,
   Users,
+  Bell,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -97,6 +98,14 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 <Link href="/semesters">
                   <Book />
                   Notes
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/latest-update")}>
+                <Link href="/latest-update">
+                  <Bell />
+                  Latest Update
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>

@@ -41,10 +41,6 @@ export default function HomePage() {
     };
   }, []);
 
-  const handleUpdateNoteClick = () => {
-    setShowBadge(false);
-  }
-
   return (
     <AppLayout pageTitle="Dashboard">
       <div className="flex flex-col items-center">
@@ -74,22 +70,24 @@ export default function HomePage() {
               </Card>
             </Link>
             
-            <Card className="transition-all duration-300 h-full flex flex-col" onClick={handleUpdateNoteClick}>
-               <CardHeader>
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <div className="p-3 bg-accent/10 rounded-full text-accent">
-                            <Bell className="h-6 w-6"/>
+            <Link href="/latest-update">
+                <Card className="hover:shadow-md hover:border-primary transition-all duration-300 h-full flex flex-col">
+                   <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-accent/10 rounded-full text-accent">
+                                <Bell className="h-6 w-6"/>
+                            </div>
+                            <CardTitle className="font-headline text-2xl">Latest Update</CardTitle>
                         </div>
-                        <CardTitle className="font-headline text-2xl">Latest Update</CardTitle>
+                        {showBadge && <Badge variant="destructive">New</Badge>}
                     </div>
-                    {showBadge && <Badge variant="destructive">New</Badge>}
-                </div>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <p className="text-muted-foreground">{updateNote.text}</p>
-              </CardContent>
-            </Card>
+                  </CardHeader>
+                  <CardContent className="flex-grow">
+                    <p className="text-muted-foreground line-clamp-3">{updateNote.text}</p>
+                  </CardContent>
+                </Card>
+            </Link>
           </div>
         </Card>
       </div>
