@@ -49,8 +49,8 @@ export default function SignupPage() {
           <CardContent>
             <form onSubmit={handleSignup} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="full-name">Full Name</Label>
-                <Input id="full-name" placeholder="John Doe" required disabled={isLoading} />
+                <Label htmlFor="username">Username</Label>
+                <Input id="username" placeholder="johndoe" required disabled={isLoading} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
