@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.63 1.9-3.87 0-7-3.13-7-7s3.13-7 7-7c2.25 0 3.67.9 4.54 1.74l2.42-2.42C18.14 2.09 15.61 1 12.48 1 7.03 1 3 5.03 3 10.5s4.03 9.5 9.48 9.5c2.83 0 5.1-1 6.75-2.6s2.4-4 2.4-6.6c0-.6-.05-1.2-.15-1.78Z"/></svg>
@@ -76,7 +77,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${background}')` }} data-ai-hint="abstract background">
-      <div style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} className="flex min-h-screen flex-col items-center justify-center p-4 backdrop-blur-sm">
+      <div style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} className={cn("flex min-h-screen flex-col items-center justify-center p-4", overlayOpacity > 0 && "backdrop-blur-sm")}>
         <div className="w-full max-w-md">
           <Card className="shadow-2xl">
             <CardHeader className="text-center">

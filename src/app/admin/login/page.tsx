@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const DEFAULT_BG = "https://placehold.co/1920x1080.png";
 
@@ -66,7 +67,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${background}')` }} data-ai-hint="abstract background">
-      <div style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} className="flex min-h-screen flex-col items-center justify-center p-4 backdrop-blur-sm">
+      <div style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} className={cn("flex min-h-screen flex-col items-center justify-center p-4", overlayOpacity > 0 && "backdrop-blur-sm")}>
         <div className="w-full max-w-md">
           <Card className="shadow-2xl">
             <CardHeader className="text-center">
