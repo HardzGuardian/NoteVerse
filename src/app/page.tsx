@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { users as initialUsers, User } from "@/lib/data";
 
 const GoogleIcon = () => (
     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.63 1.9-3.87 0-7-3.13-7-7s3.13-7 7-7c2.25 0 3.67.9 4.54 1.74l2.42-2.42C18.14 2.09 15.61 1 12.48 1 7.03 1 3 5.03 3 10.5s4.03 9.5 9.48 9.5c2.83 0 5.1-1 6.75-2.6s2.4-4 2.4-6.6c0-.6-.05-1.2-.15-1.78Z"/></svg>
@@ -59,8 +60,15 @@ export default function LoginPage() {
   }, []);
 
   const handleLogin = () => {
-    // This is a mock login. In a real app, you'd validate against a database.
-    if (email === "student@example.com" && password === "password") {
+    const storedUsersRaw = localStorage.getItem('all-users');
+    const allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
+
+    const user = allUsers.find(u => u.email === email);
+
+    // Mock password check for any non-admin user. 
+    // In a real app, this would be a secure check against a hashed password.
+    if (user && user.role !== 'Admin' && password === "password") {
+      localStorage.setItem('loggedInUserId', user.id);
       router.push("/home");
     } else {
       setLoginAttempts((prev) => prev + 1);
@@ -161,7 +169,8 @@ export default function LoginPage() {
                   </div>
                   <Input 
                     id="password" 
-                    type="password" 
+                    type="password"
+                    placeholder="password"
                     required 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
