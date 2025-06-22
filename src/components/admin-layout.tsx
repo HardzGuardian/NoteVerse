@@ -3,10 +3,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   Book,
-  Home,
-  User,
   Settings,
   LayoutDashboard,
   BookCopy,
@@ -38,14 +37,41 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
+import { users } from "@/lib/data";
 
 type AdminLayoutProps = {
   children: React.ReactNode;
   pageTitle: string;
 };
 
+// In a real app, you'd get this from an auth context
+const adminUserId = 'usr1';
+
 export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
   const pathname = usePathname();
+  const [adminAvatar, setAdminAvatar] = useState("https://placehold.co/100x100.png");
+  const [adminFallback, setAdminFallback] = useState("A");
+
+  useEffect(() => {
+    const updateAdminDetails = () => {
+        const adminUser = users.find(u => u.id === adminUserId);
+        if (!adminUser) return;
+        
+        const savedAvatar = localStorage.getItem(`user-avatar-${adminUserId}`);
+        const savedName = localStorage.getItem(`user-name-${adminUserId}`);
+        
+        const name = savedName || adminUser.name;
+        setAdminAvatar(savedAvatar || adminUser.avatar);
+        setAdminFallback(name.charAt(0).toUpperCase());
+    };
+
+    updateAdminDetails();
+
+    window.addEventListener('avatar-updated', updateAdminDetails);
+    return () => {
+        window.removeEventListener('avatar-updated', updateAdminDetails);
+    };
+  }, []);
 
   return (
     <SidebarProvider>
@@ -127,8 +153,8 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar>
-                  <AvatarImage src="https://placehold.co/100x100.png" alt="Admin User" data-ai-hint="person avatar" />
-                  <AvatarFallback>A</AvatarFallback>
+                  <AvatarImage src={adminAvatar} alt="Admin User" data-ai-hint="person avatar" />
+                  <AvatarFallback>{adminFallback}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
