@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { semesters as allSemesters } from "@/lib/data";
 import { PlusCircle, FileText, ChevronRight, FolderOpen } from "lucide-react";
 
-export default function AdminSubjectsPage({ params }: { params: { semesterId: string } }) {
+export default function AdminSubjectsPage() {
+  const params = useParams<{ semesterId: string }>();
   const [loading, setLoading] = useState(true);
   const semester = allSemesters.find((s) => s.id === params.semesterId);
 

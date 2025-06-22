@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -72,7 +74,8 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
   )
 };
 
-export default function PDFsPage({ params }: { params: { semesterId: string; subjectId: string } }) {
+export default function PDFsPage() {
+  const params = useParams<{ semesterId: string; subjectId: string }>();
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 

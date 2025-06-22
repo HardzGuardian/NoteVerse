@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -83,7 +85,8 @@ const PDFTable = ({ pdfs, onDownload, onDelete, type }: PDFTableProps) => {
 };
 
 
-export default function AdminPDFsPage({ params }: { params: { semesterId: string; subjectId: string } }) {
+export default function AdminPDFsPage() {
+  const params = useParams<{ semesterId: string; subjectId: string }>();
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
