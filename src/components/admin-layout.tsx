@@ -11,6 +11,7 @@ import {
   BookCopy,
   FileText,
   Megaphone,
+  Users,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -73,6 +74,14 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 <Link href="/admin/semesters">
                   <BookCopy />
                   Manage Notes
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/users")}>
+                <Link href="/admin/users">
+                  <Users />
+                  User Management
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
