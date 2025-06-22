@@ -13,6 +13,7 @@ import {
   Megaphone,
   Users,
   LogOut,
+  User,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -161,6 +162,12 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/admin/profile">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>My Profile</span>
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link href="/admin/settings">
                   <Settings className="mr-2 h-4 w-4" />
