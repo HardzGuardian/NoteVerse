@@ -19,17 +19,24 @@ export default function UsersPage() {
   const loggedInUserId = 'usr2';
 
   useEffect(() => {
-    // This effect runs only on the client to check the user's preference.
+    // This effect runs only on the client to check the user's preference and avatar.
     const hideNamePreference = localStorage.getItem('user-hide-name');
     const shouldHideName = hideNamePreference ? JSON.parse(hideNamePreference) : true;
 
     const processedUsers = initialUsers.map(user => {
+      const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
+      let userIsHidden = user.displayNameHidden;
+
       // If this user is the one currently logged in, respect their privacy setting.
       if (user.id === loggedInUserId) {
-        return { ...user, displayNameHidden: shouldHideName };
+        userIsHidden = shouldHideName;
       }
-      // Otherwise, use the default setting from the data.
-      return user;
+      
+      return { 
+        ...user, 
+        displayNameHidden: userIsHidden,
+        avatar: storedAvatar || user.avatar, // Override avatar if it exists in local storage
+      };
     });
 
     setDisplayUsers(processedUsers);
@@ -93,7 +100,7 @@ export default function UsersPage() {
                     <div key={user.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="relative">
                         <Avatar className="h-12 w-12">
-                        <AvatarImage src={user.avatar} data-ai-hint="person avatar" />
+                        <AvatarImage src={user.displayNameHidden ? '' : user.avatar} data-ai-hint="person avatar" />
                         <AvatarFallback>{getAvatarFallback(user)}</AvatarFallback>
                         </Avatar>
                         <span className={cn(

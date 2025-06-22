@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AppLayout } from "@/components/app-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +27,15 @@ export default function ProfilePage() {
   
   const canChangeName = currentUser?.canChangeName ?? false;
 
+  useEffect(() => {
+    if (currentUser) {
+      const savedAvatar = localStorage.getItem(`user-avatar-${currentUser.id}`);
+      if (savedAvatar) {
+        setAvatar(savedAvatar);
+      }
+    }
+  }, []);
+
   const handleChoosePhoto = () => {
     fileInputRef.current?.click();
   };
@@ -44,6 +53,7 @@ export default function ProfilePage() {
   };
 
   const handleSaveChanges = () => {
+    if (!currentUser) return;
     setIsLoading(true);
     // In a real app, you would save this to a database
     setTimeout(() => {
@@ -51,6 +61,7 @@ export default function ProfilePage() {
       if (avatarPreview && avatarFile) {
         // Here you would upload the avatarFile to your storage and get a URL
         // For now, we'll just update the local state to simulate it.
+        localStorage.setItem(`user-avatar-${currentUser.id}`, avatarPreview);
         setAvatar(avatarPreview);
         setAvatarPreview(null);
         setAvatarFile(null);

@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -22,7 +22,7 @@ import { Switch } from "@/components/ui/switch";
 type UserRole = "Admin" | "Student" | "Uploader";
 
 export default function UserManagementPage() {
-  const [users, setUsers] = useState<User[]>(initialUsers);
+  const [users, setUsers] = useState<User[]>([]);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
@@ -35,6 +35,17 @@ export default function UserManagementPage() {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'Student' as UserRole });
   const { toast } = useToast();
+  
+  useEffect(() => {
+    const processedUsers = initialUsers.map(user => {
+        const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
+        return {
+            ...user,
+            avatar: storedAvatar || user.avatar,
+        };
+    });
+    setUsers(processedUsers);
+  }, []);
 
   const handleOpenEditDialog = (user: User) => {
     setUserToEdit(user);

@@ -23,6 +23,7 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [font, setFont] = useState('font-body');
   const [hideMyName, setHideMyName] = useState(true);
+  const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
     const savedFont = localStorage.getItem("font") || "font-body";
@@ -32,6 +33,7 @@ export default function SettingsPage() {
     setHideMyName(namePreference ? JSON.parse(namePreference) : true);
 
     setMounted(true);
+    setInitialLoad(false);
   }, []);
 
   useEffect(() => {
@@ -45,14 +47,14 @@ export default function SettingsPage() {
   }, [font, mounted]);
   
   useEffect(() => {
-    if (mounted) {
+    if (mounted && !initialLoad) {
       localStorage.setItem("user-hide-name", JSON.stringify(hideMyName));
       toast({
-          title: "Preference Saved",
-          description: `Your name is now ${hideMyName ? 'hidden' : 'visible'} in the community tab.`,
+          title: "Privacy Setting Updated",
+          description: `Your name and photo are now ${hideMyName ? 'hidden from' : 'visible to'} other users.`,
       })
     }
-  }, [hideMyName, mounted, toast]);
+  }, [hideMyName, mounted, initialLoad, toast]);
 
   return (
     <AppLayout pageTitle="Settings">
@@ -93,14 +95,14 @@ export default function SettingsPage() {
             <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
                     <Label htmlFor="name-privacy" className="text-base font-medium">Privacy</Label>
-                    <p className="text-sm text-muted-foreground">Hide my name in the Community tab.</p>
+                    <p className="text-sm text-muted-foreground">Hide my name & photo in the Community tab.</p>
                 </div>
                  {mounted ? (
                     <Switch
                         id="name-privacy"
                         checked={hideMyName}
                         onCheckedChange={setHideMyName}
-                        aria-label="Toggle name visibility"
+                        aria-label="Toggle name and photo visibility"
                     />
                 ) : (
                     <div className="w-11 h-6 bg-muted rounded-full animate-pulse" />
