@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { BookOpen, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { users as initialUsers, User } from "@/lib/data";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -34,20 +35,34 @@ export default function SignupPage() {
 
     setIsLoading(true);
 
-    // In a real app, you would create a user in a database.
-    // For this mock, we'll simulate it with localStorage.
     setTimeout(() => {
       const newUserId = `usr${Date.now()}`;
       
-      // Save the new user's ID to represent the current "session"
+      const newUser: User = {
+        id: newUserId,
+        name: username,
+        email: email,
+        avatar: 'https://placehold.co/100x100.png',
+        role: 'Student',
+        status: 'online',
+        displayNameHidden: true,
+        canChangeName: true,
+      };
+
+      const storedUsersRaw = localStorage.getItem('all-users');
+      let allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
+      allUsers.push(newUser);
+      localStorage.setItem('all-users', JSON.stringify(allUsers));
+      
       localStorage.setItem('loggedInUserId', newUserId);
 
-      // Save the new user's details to localStorage
       localStorage.setItem(`user-name-${newUserId}`, username);
       localStorage.setItem(`user-email-${newUserId}`, email);
-      localStorage.setItem(`user-avatar-${newUserId}`, 'https://placehold.co/100x100.png'); // Default avatar
+      localStorage.setItem(`user-avatar-${newUserId}`, newUser.avatar);
       localStorage.setItem(`user-role-${newUserId}`, 'Student');
       localStorage.setItem(`user-canChangeName-${newUserId}`, 'true');
+      
+      window.dispatchEvent(new Event('user-list-updated'));
 
       toast({
         title: "Account Created!",

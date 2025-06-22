@@ -41,7 +41,10 @@ export default function UserManagementPage() {
   
   useEffect(() => {
     const loadUsers = () => {
-        const processedUsers = initialUsers.map(user => {
+        const storedUsersRaw = localStorage.getItem('all-users');
+        const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
+
+        const processedUsers = sourceUsers.map(user => {
             const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
             const storedName = localStorage.getItem(`user-name-${user.id}`);
             return {
@@ -55,10 +58,11 @@ export default function UserManagementPage() {
 
     loadUsers();
 
-    // Listen for avatar updates to refresh the list
     window.addEventListener('avatar-updated', loadUsers);
+    window.addEventListener('user-list-updated', loadUsers);
     return () => {
         window.removeEventListener('avatar-updated', loadUsers);
+        window.removeEventListener('user-list-updated', loadUsers);
     };
   }, []);
 
@@ -97,26 +101,8 @@ export default function UserManagementPage() {
 
     const originalName = userToEdit.name;
     let photoUpdated = false;
-    if (avatarPreview) {
-      localStorage.setItem(`user-avatar-${userToEdit.id}`, avatarPreview);
-      photoUpdated = true;
-    }
 
-    localStorage.setItem(`user-name-${userToEdit.id}`, editedUserData.name);
-    
-    // In a real app, we'd save these to the database.
-    // For this mock, we'll update the initialUsers array to simulate persistence across reloads on this page.
-    const userInMemory = initialUsers.find(u => u.id === userToEdit.id);
-    if(userInMemory) {
-      userInMemory.canChangeName = editedUserData.canChangeName;
-      userInMemory.name = editedUserData.name;
-      userInMemory.role = editedUserData.role;
-      if (avatarPreview) {
-        userInMemory.avatar = avatarPreview;
-      }
-    }
-
-    setUsers(users.map(u => 
+    const updatedUsers = users.map(u => 
         u.id === userToEdit.id 
         ? { ...u, 
             name: editedUserData.name, 
@@ -125,9 +111,18 @@ export default function UserManagementPage() {
             avatar: avatarPreview || u.avatar
           } 
         : u
-    ));
+    );
+    setUsers(updatedUsers);
+    localStorage.setItem('all-users', JSON.stringify(updatedUsers));
+
+    if (avatarPreview) {
+      localStorage.setItem(`user-avatar-${userToEdit.id}`, avatarPreview);
+      photoUpdated = true;
+    }
+    localStorage.setItem(`user-name-${userToEdit.id}`, editedUserData.name);
+    localStorage.setItem(`user-role-${userToEdit.id}`, editedUserData.role);
+    localStorage.setItem(`user-canChangeName-${userToEdit.id}`, JSON.stringify(editedUserData.canChangeName));
     
-    // Notify other components if the user's details were edited by the admin
     if (photoUpdated || editedUserData.name !== originalName) {
         window.dispatchEvent(new Event('avatar-updated'));
     }
@@ -141,7 +136,11 @@ export default function UserManagementPage() {
   
   const handleDeleteUser = () => {
     if (!userToDelete) return;
-    setUsers(users.filter(u => u.id !== userToDelete.id));
+    const updatedUsers = users.filter(u => u.id !== userToDelete.id);
+    setUsers(updatedUsers);
+    localStorage.setItem('all-users', JSON.stringify(updatedUsers));
+    window.dispatchEvent(new Event('user-list-updated'));
+
     toast({
       variant: "destructive",
       title: "User Deleted",
@@ -159,10 +158,8 @@ export default function UserManagementPage() {
       });
       return;
     }
-    // In a real app, this password would be securely sent to a backend
-    // to be hashed and stored, not kept in frontend state.
     const newUser: User = {
-        id: `usr${users.length + 1}`,
+        id: `usr${Date.now()}`,
         name: newUserData.name,
         email: newUserData.email,
         role: newUserData.role,
@@ -171,7 +168,12 @@ export default function UserManagementPage() {
         displayNameHidden: true,
         canChangeName: true,
     };
-    setUsers([...users, newUser]);
+    
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    localStorage.setItem('all-users', JSON.stringify(updatedUsers));
+    window.dispatchEvent(new Event('user-list-updated'));
+
     toast({
         title: "User Added",
         description: `${newUser.name} has been added as a ${newUser.role}.`,

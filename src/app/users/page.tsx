@@ -16,21 +16,27 @@ export default function UsersPage() {
 
   // This simulates the identity of the currently logged-in user.
   // In a real app, this would come from an authentication context.
-  const loggedInUserId = 'usr2';
+  const [loggedInUserId, setLoggedInUserId] = useState<string | null>(null);
 
   useEffect(() => {
+    setLoggedInUserId(localStorage.getItem('loggedInUserId'));
+    
     const loadUsers = () => {
-        // This effect runs only on the client to check the user's preference and avatar.
+        setIsLoading(true);
         const hideNamePreference = localStorage.getItem('user-hide-name');
         const shouldHideName = hideNamePreference ? JSON.parse(hideNamePreference) : true;
+        
+        const storedUsersRaw = localStorage.getItem('all-users');
+        const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
 
-        const processedUsers = initialUsers.map(user => {
+        const currentLoggedInUserId = localStorage.getItem('loggedInUserId');
+
+        const processedUsers = sourceUsers.map(user => {
             const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
             const storedName = localStorage.getItem(`user-name-${user.id}`);
             let userIsHidden = user.displayNameHidden;
 
-            // If this user is the one currently logged in, respect their privacy setting.
-            if (user.id === loggedInUserId) {
+            if (user.id === currentLoggedInUserId) {
                 userIsHidden = shouldHideName;
             }
             
@@ -38,7 +44,7 @@ export default function UsersPage() {
                 ...user,
                 name: storedName || user.name,
                 displayNameHidden: userIsHidden,
-                avatar: storedAvatar || user.avatar, // Override avatar if it exists in local storage
+                avatar: storedAvatar || user.avatar,
             };
         });
 
@@ -48,10 +54,11 @@ export default function UsersPage() {
 
     loadUsers();
 
-    // Listen for avatar updates to refresh the list
     window.addEventListener('avatar-updated', loadUsers);
+    window.addEventListener('user-list-updated', loadUsers);
     return () => {
         window.removeEventListener('avatar-updated', loadUsers);
+        window.removeEventListener('user-list-updated', loadUsers);
     };
   }, []);
 
