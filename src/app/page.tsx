@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -29,7 +28,15 @@ export default function LoginPage() {
                 <Input id="email" type="email" placeholder="student@example.com" required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="#"
+                    className="ml-auto inline-block text-sm underline text-primary font-medium"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
                 <Input id="password" type="password" required />
               </div>
               <div className="flex flex-col gap-3 pt-2">
