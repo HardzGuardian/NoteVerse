@@ -11,6 +11,10 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Shield } from "lucide-react";
 
+const GoogleIcon = () => (
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.63 1.9-3.87 0-7-3.13-7-7s3.13-7 7-7c2.25 0 3.67.9 4.54 1.74l2.42-2.42C18.14 2.09 15.61 1 12.48 1 7.03 1 3 5.03 3 10.5s4.03 9.5 9.48 9.5c2.83 0 5.1-1 6.75-2.6s2.4-4 2.4-6.6c0-.6-.05-1.2-.15-1.78Z"/></svg>
+);
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -31,6 +35,12 @@ export default function AdminLoginPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    // For now, this mock login will grant access.
+    // In a real app, you would verify the Google user is an admin.
+    router.push("/admin");
+  }
+
   return (
     <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: "url('https://placehold.co/1920x1080.png')" }} data-ai-hint="abstract background">
       <div className="flex min-h-screen flex-col items-center justify-center bg-background/80 p-4 backdrop-blur-sm">
@@ -47,6 +57,22 @@ export default function AdminLoginPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                <Button variant="outline" className="w-full" onClick={handleGoogleLogin}>
+                  <GoogleIcon />
+                  Login with Google
+                </Button>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      Or continue with email
+                    </span>
+                  </div>
+                </div>
+              
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
                   <Input 
