@@ -14,6 +14,7 @@ import { Shield } from "lucide-react";
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loginAttempts, setLoginAttempts] = useState(0);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -21,6 +22,7 @@ export default function AdminLoginPage() {
     if (email === "sagarsalunkhe98@gmail.com" && password === "Hardz@1998") {
       router.push("/admin");
     } else {
+      setLoginAttempts((prev) => prev + 1);
       toast({
         variant: "destructive",
         title: "Login Failed",
@@ -57,12 +59,14 @@ export default function AdminLoginPage() {
               <div className="space-y-2">
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
-                  <Link
-                    href="#"
-                    className="ml-auto inline-block text-sm underline text-primary font-medium"
-                  >
-                    Forgot password?
-                  </Link>
+                  {loginAttempts >= 2 && (
+                    <Link
+                      href="#"
+                      className="ml-auto inline-block text-sm underline text-primary font-medium"
+                    >
+                      Forgot password?
+                    </Link>
+                  )}
                 </div>
                 <Input 
                   id="password" 
