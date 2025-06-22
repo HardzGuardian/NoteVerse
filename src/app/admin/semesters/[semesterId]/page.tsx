@@ -5,15 +5,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin-layout";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { semesters as allSemesters, Semester, Subject } from "@/lib/data";
-import { PlusCircle, FileText, ChevronRight, FolderOpen } from "lucide-react";
+import { PlusCircle, FileText, ChevronRight, FolderOpen, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function AdminSubjectsPage() {
   const params = useParams<{ semesterId: string }>();
@@ -21,11 +23,17 @@ export default function AdminSubjectsPage() {
   const [semester, setSemester] = useState<Semester | undefined>();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newSubjectName, setNewSubjectName] = useState("");
+
+  const [subjectToEdit, setSubjectToEdit] = useState<Subject | null>(null);
+  const [editedSubjectName, setEditedSubjectName] = useState("");
+  const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
+
   const { toast } = useToast();
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setSemester(allSemesters.find((s) => s.id === params.semesterId));
+      const foundSemester = allSemesters.find((s) => s.id === params.semesterId);
+      setSemester(foundSemester ? JSON.parse(JSON.stringify(foundSemester)) : undefined);
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
@@ -44,17 +52,38 @@ export default function AdminSubjectsPage() {
       pdfs: [],
     };
 
-    const updatedSemester = {
-      ...semester,
-      subjects: [...semester.subjects, newSubject],
-    };
-
-    setSemester(updatedSemester);
-    // Note: This updates the local state for the UI. In a real app, you'd persist this change.
-
+    setSemester(prev => prev ? { ...prev, subjects: [...prev.subjects, newSubject] } : undefined);
     toast({ title: "Success", description: "New subject added." });
     setNewSubjectName("");
     setIsAddDialogOpen(false);
+  };
+
+  const handleOpenEditDialog = (subject: Subject) => {
+    setSubjectToEdit(subject);
+    setEditedSubjectName(subject.name);
+  };
+
+  const handleUpdateSubject = () => {
+    if (!subjectToEdit || !editedSubjectName.trim() || !semester) {
+      toast({ variant: "destructive", title: "Error", description: "Subject name cannot be empty." });
+      return;
+    }
+    setSemester(prev => prev ? {
+      ...prev,
+      subjects: prev.subjects.map(s => (s.id === subjectToEdit.id ? { ...s, name: editedSubjectName } : s))
+    } : undefined);
+    toast({ title: "Success", description: `Subject renamed to "${editedSubjectName}".` });
+    setSubjectToEdit(null);
+  };
+  
+  const handleDeleteSubject = () => {
+    if (!subjectToDelete || !semester) return;
+    setSemester(prev => prev ? {
+        ...prev,
+        subjects: prev.subjects.filter(s => s.id !== subjectToDelete.id)
+    } : undefined);
+    toast({ variant: "destructive", title: "Deleted", description: `Subject "${subjectToDelete.name}" has been deleted.` });
+    setSubjectToDelete(null);
   };
 
   if (!semester && !loading) {
@@ -76,7 +105,7 @@ export default function AdminSubjectsPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Manage Subjects</h2>
-          <p className="text-muted-foreground">Select a subject to manage its notes and exam papers.</p>
+          <p className="text-muted-foreground">Add, rename, delete or select a subject to manage its files.</p>
         </div>
         <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Add Subject
@@ -92,8 +121,26 @@ export default function AdminSubjectsPage() {
       ) : semester && semester.subjects.length > 0 ? (
         <div className="space-y-4">
           {semester.subjects.map((subject) => (
-            <Link href={`/admin/semesters/${semester.id}/subjects/${subject.id}`} key={subject.id}>
-              <Card className="hover:shadow-md hover:border-primary transition-all duration-300">
+            <Card key={subject.id} className="relative hover:shadow-md hover:border-primary/50 transition-all duration-300">
+                <div className="absolute top-2 right-2 z-10">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleOpenEditDialog(subject)}>
+                          <Edit className="mr-2 h-4 w-4" /> Rename
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => setSubjectToDelete(subject)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                 </div>
+              <Link href={`/admin/semesters/${semester.id}/subjects/${subject.id}`} className="block h-full">
                 <CardContent className="p-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <FileText className="h-6 w-6 text-primary" />
@@ -106,8 +153,8 @@ export default function AdminSubjectsPage() {
                     </div>
                   <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </CardContent>
-              </Card>
-            </Link>
+              </Link>
+            </Card>
           ))}
         </div>
       ) : (
@@ -150,6 +197,45 @@ export default function AdminSubjectsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Edit Subject Dialog */}
+      <Dialog open={!!subjectToEdit} onOpenChange={(isOpen) => !isOpen && setSubjectToEdit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Subject</DialogTitle>
+            <DialogDescription>Enter a new name for "{subjectToEdit?.name}".</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <Label htmlFor="subject-name-edit">Subject Name</Label>
+            <Input 
+              id="subject-name-edit" 
+              value={editedSubjectName}
+              onChange={(e) => setEditedSubjectName(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSubjectToEdit(null)}>Cancel</Button>
+            <Button onClick={handleUpdateSubject}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!subjectToDelete} onOpenChange={(isOpen) => !isOpen && setSubjectToDelete(null)}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the subject "{subjectToDelete?.name}" and all its files.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSubjectToDelete(null)}>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteSubject} className={buttonVariants({ variant: "destructive" })}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
     </AdminLayout>
   );

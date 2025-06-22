@@ -5,16 +5,17 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin-layout";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { semesters as allSemesters, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -22,12 +23,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 type PDFTableProps = {
   pdfs: PDF[];
   onDownload: (title: string) => void;
-  onDelete: (title: string) => void;
+  onRename: (pdf: PDF) => void;
+  onDelete: (pdf: PDF) => void;
   onUpload: () => void;
   type: 'Note' | 'Exam';
 };
 
-const PDFTable = ({ pdfs, onDownload, onDelete, onUpload, type }: PDFTableProps) => {
+const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onUpload, type }: PDFTableProps) => {
   if (pdfs.length === 0) {
     return (
       <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -73,8 +75,12 @@ const PDFTable = ({ pdfs, onDownload, onDelete, onUpload, type }: PDFTableProps)
                   <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
                     <Download className="mr-2 h-4 w-4" /> Download
                   </DropdownMenuItem>
+                   <DropdownMenuItem onClick={() => onRename(pdf)}>
+                    <Edit className="mr-2 h-4 w-4" /> Rename
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem 
-                      onClick={() => onDelete(pdf.title)}
+                      onClick={() => onDelete(pdf)}
                       className="text-destructive focus:bg-destructive/10 focus:text-destructive">
                     <Trash2 className="mr-2 h-4 w-4" /> Delete
                   </DropdownMenuItem>
@@ -98,12 +104,17 @@ export default function AdminPDFsPage() {
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [newFileData, setNewFileData] = useState({ title: "", category: "Note" as "Note" | "Exam" });
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  
+  const [pdfToEdit, setPdfToEdit] = useState<PDF | null>(null);
+  const [editedPdfTitle, setEditedPdfTitle] = useState("");
+  
+  const [pdfToDelete, setPdfToDelete] = useState<PDF | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
       const currentSemester = allSemesters.find((s) => s.id === params.semesterId);
       const currentSubject = currentSemester?.subjects.find((sub) => sub.id === params.subjectId);
-      setSubject(currentSubject);
+      setSubject(currentSubject ? JSON.parse(JSON.stringify(currentSubject)) : undefined);
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
@@ -115,13 +126,33 @@ export default function AdminPDFsPage() {
       description: `${title} has started downloading.`,
     });
   };
-
-  const handleDelete = (title: string) => {
-    toast({
-      variant: "destructive",
-      title: "Deleting...",
-      description: `Request to delete ${title} sent.`,
-    });
+  
+  const handleOpenEditDialog = (pdf: PDF) => {
+    setPdfToEdit(pdf);
+    setEditedPdfTitle(pdf.title);
+  };
+  
+  const handleUpdatePdf = () => {
+    if (!pdfToEdit || !editedPdfTitle.trim() || !subject) {
+        toast({ variant: "destructive", title: "Error", description: "File title cannot be empty." });
+        return;
+    }
+    setSubject(prev => prev ? {
+      ...prev,
+      pdfs: prev.pdfs.map(p => p.id === pdfToEdit.id ? { ...p, title: editedPdfTitle } : p)
+    } : undefined);
+    toast({ title: "Success", description: `File renamed to "${editedPdfTitle}".` });
+    setPdfToEdit(null);
+  };
+  
+  const handleDeletePdf = () => {
+    if (!pdfToDelete || !subject) return;
+    setSubject(prev => prev ? {
+      ...prev,
+      pdfs: prev.pdfs.filter(p => p.id !== pdfToDelete.id)
+    } : undefined);
+    toast({ variant: "destructive", title: "Deleted", description: `File "${pdfToDelete.title}" has been deleted.` });
+    setPdfToDelete(null);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,12 +176,7 @@ export default function AdminPDFsPage() {
       createdAt: new Date().toISOString().split('T')[0],
     };
 
-    const updatedSubject = {
-      ...subject,
-      pdfs: [...subject.pdfs, newPdf],
-    };
-    setSubject(updatedSubject);
-    // Note: This updates the local state for the UI. In a real app, you'd persist this change.
+    setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
 
     toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
     setIsUploadDialogOpen(false);
@@ -180,7 +206,7 @@ export default function AdminPDFsPage() {
        <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Manage Subject Files</h2>
-          <p className="text-muted-foreground">Upload, download, or delete notes and exam papers.</p>
+          <p className="text-muted-foreground">Upload, rename, or delete notes and exam papers.</p>
         </div>
         <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsUploadDialogOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" /> Upload File
@@ -201,10 +227,10 @@ export default function AdminPDFsPage() {
               <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="notes">
-              <PDFTable pdfs={notes} onDownload={handleDownload} onDelete={handleDelete} type="Note" onUpload={() => setIsUploadDialogOpen(true)} />
+              <PDFTable pdfs={notes} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Note" onUpload={() => setIsUploadDialogOpen(true)} />
             </TabsContent>
             <TabsContent value="exams">
-              <PDFTable pdfs={exams} onDownload={handleDownload} onDelete={handleDelete} type="Exam" onUpload={() => setIsUploadDialogOpen(true)} />
+              <PDFTable pdfs={exams} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Exam" onUpload={() => setIsUploadDialogOpen(true)} />
             </TabsContent>
           </Tabs>
         )}
@@ -260,6 +286,45 @@ export default function AdminPDFsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      
+      {/* Edit PDF Dialog */}
+      <Dialog open={!!pdfToEdit} onOpenChange={(isOpen) => !isOpen && setPdfToEdit(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename File</DialogTitle>
+            <DialogDescription>Enter a new title for "{pdfToEdit?.title}".</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-2">
+            <Label htmlFor="pdf-title-edit">File Title</Label>
+            <Input 
+              id="pdf-title-edit" 
+              value={editedPdfTitle}
+              onChange={(e) => setEditedPdfTitle(e.target.value)}
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPdfToEdit(null)}>Cancel</Button>
+            <Button onClick={handleUpdatePdf}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+       <AlertDialog open={!!pdfToDelete} onOpenChange={(isOpen) => !isOpen && setPdfToDelete(null)}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      This action cannot be undone. This will permanently delete the file "{pdfToDelete?.title}".
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                  <AlertDialogCancel onClick={() => setPdfToDelete(null)}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDeletePdf} className={buttonVariants({ variant: "destructive" })}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+      </AlertDialog>
     </AdminLayout>
   );
 }
