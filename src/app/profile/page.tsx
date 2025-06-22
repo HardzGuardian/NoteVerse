@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { AppLayout } from "@/components/app-layout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -18,19 +18,51 @@ const currentUser = users.find(u => u.id === loggedInUserId);
 export default function ProfilePage() {
   const { toast } = useToast();
   const [name, setName] = useState(currentUser ? (currentUser.name || currentUser.email.split('@')[0]) : "");
+  const [avatar, setAvatar] = useState(currentUser?.avatar || "https://placehold.co/128x128.png");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  
   const [isLoading, setIsLoading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const canChangeName = currentUser?.canChangeName ?? false;
+
+  const handleChoosePhoto = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSaveChanges = () => {
     setIsLoading(true);
     // In a real app, you would save this to a database
     setTimeout(() => {
+      let photoUpdated = false;
+      if (avatarPreview && avatarFile) {
+        // Here you would upload the avatarFile to your storage and get a URL
+        // For now, we'll just update the local state to simulate it.
+        setAvatar(avatarPreview);
+        setAvatarPreview(null);
+        setAvatarFile(null);
+        photoUpdated = true;
+      }
+
       console.log("Saving new name:", name);
       // Here you would update the user data source
+      
       toast({
         title: "Profile Updated",
-        description: "Your name has been successfully updated.",
+        description: `Your ${photoUpdated ? "photo and " : ""}name has been successfully updated.`,
       });
       setIsLoading(false);
     }, 1000);
@@ -47,10 +79,17 @@ export default function ProfilePage() {
           <CardContent className="space-y-6">
             <div className="flex items-center gap-4">
               <Avatar className="h-20 w-20">
-                <AvatarImage src="https://placehold.co/128x128.png" data-ai-hint="person avatar" />
-                <AvatarFallback>{name.charAt(0) || 'U'}</AvatarFallback>
+                <AvatarImage src={avatarPreview || avatar} data-ai-hint="person avatar" />
+                <AvatarFallback>{(name.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
               </Avatar>
-              <Button variant="outline">Change Photo</Button>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoChange}
+                className="hidden"
+                accept="image/*"
+              />
+              <Button variant="outline" onClick={handleChoosePhoto}>Change Photo</Button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -73,7 +112,7 @@ export default function ProfilePage() {
                 </div>
             </div>
             <div>
-                <Button onClick={handleSaveChanges} disabled={!canChangeName || isLoading} className="bg-accent hover:bg-accent/90">
+                <Button onClick={handleSaveChanges} disabled={isLoading} className="bg-accent hover:bg-accent/90">
                     {isLoading ? "Saving..." : "Save Changes"}
                 </Button>
             </div>
