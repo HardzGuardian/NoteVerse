@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { AdminLayout } from "@/components/admin-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +35,9 @@ export default function UserManagementPage() {
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
   const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'Student' as UserRole });
   const { toast } = useToast();
+
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   useEffect(() => {
     const loadUsers = () => {
@@ -66,6 +69,18 @@ export default function UserManagementPage() {
       role: user.role,
       canChangeName: user.canChangeName,
     });
+    setAvatarPreview(null);
+  };
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSaveUser = () => {
@@ -80,14 +95,25 @@ export default function UserManagementPage() {
         return;
     }
 
+    const originalName = userToEdit.name;
+    let photoUpdated = false;
+    if (avatarPreview) {
+      localStorage.setItem(`user-avatar-${userToEdit.id}`, avatarPreview);
+      photoUpdated = true;
+    }
+
     localStorage.setItem(`user-name-${userToEdit.id}`, editedUserData.name);
-    // In a real app, we'd save the 'canChangeName' to the database.
+    
+    // In a real app, we'd save these to the database.
     // For this mock, we'll update the initialUsers array to simulate persistence across reloads on this page.
     const userInMemory = initialUsers.find(u => u.id === userToEdit.id);
     if(userInMemory) {
       userInMemory.canChangeName = editedUserData.canChangeName;
       userInMemory.name = editedUserData.name;
       userInMemory.role = editedUserData.role;
+      if (avatarPreview) {
+        userInMemory.avatar = avatarPreview;
+      }
     }
 
     setUsers(users.map(u => 
@@ -95,19 +121,20 @@ export default function UserManagementPage() {
         ? { ...u, 
             name: editedUserData.name, 
             role: editedUserData.role,
-            canChangeName: editedUserData.canChangeName 
+            canChangeName: editedUserData.canChangeName, 
+            avatar: avatarPreview || u.avatar
           } 
         : u
     ));
     
-    // Notify other components if the currently logged-in student user was edited by the admin
-    if (userToEdit.id === 'usr2') {
+    // Notify other components if the user's details were edited by the admin
+    if (photoUpdated || editedUserData.name !== originalName) {
         window.dispatchEvent(new Event('avatar-updated'));
     }
 
     toast({
       title: "User Updated",
-      description: `${userToEdit.name || userToEdit.email.split('@')[0]}'s details have been updated.`,
+      description: `${editedUserData.name || userToEdit.email.split('@')[0]}'s details have been updated.`,
     });
     setUserToEdit(null);
   };
@@ -283,10 +310,24 @@ export default function UserManagementPage() {
           <DialogHeader>
             <DialogTitle>Edit: {userToEdit?.name || userToEdit?.email.split('@')[0]}</DialogTitle>
             <DialogDescription>
-              Modify user details and permissions.
+              Modify user details, permissions, and profile picture.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
+             <div className="flex items-center gap-4">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={avatarPreview || userToEdit?.avatar} data-ai-hint="person avatar" />
+                <AvatarFallback>{(userToEdit?.name || userToEdit?.email || 'U').charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handlePhotoChange}
+                className="hidden"
+                accept="image/*"
+              />
+              <Button variant="outline" onClick={() => fileInputRef.current?.click()}>Change Photo</Button>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="edit-name">Full Name</Label>
               <Input
@@ -352,3 +393,4 @@ export default function UserManagementPage() {
     </AdminLayout>
   );
 }
+
