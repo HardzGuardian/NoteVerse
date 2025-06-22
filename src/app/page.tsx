@@ -64,10 +64,9 @@ export default function LoginPage() {
     const allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
 
     const user = allUsers.find(u => u.email === email);
+    const storedPassword = user ? localStorage.getItem(`user-password-${user.id}`) : null;
 
-    // Mock password check for any non-admin user. 
-    // In a real app, this would be a secure check against a hashed password.
-    if (user && user.role !== 'Admin' && password === "password") {
+    if (user && user.role !== 'Admin' && password === storedPassword) {
       localStorage.setItem('loggedInUserId', user.id);
       router.push("/home");
     } else {

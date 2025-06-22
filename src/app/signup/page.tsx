@@ -61,6 +61,7 @@ export default function SignupPage() {
       localStorage.setItem(`user-avatar-${newUserId}`, newUser.avatar);
       localStorage.setItem(`user-role-${newUserId}`, 'Student');
       localStorage.setItem(`user-canChangeName-${newUserId}`, 'true');
+      localStorage.setItem(`user-password-${newUserId}`, password);
       
       toast({
         title: "Account Created!",

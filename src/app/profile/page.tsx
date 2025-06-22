@@ -78,7 +78,8 @@ export default function ProfilePage() {
 
       // Password change logic
       if (newPassword) {
-        if (currentPassword !== "password") { // Mock password check
+        const storedPassword = localStorage.getItem(`user-password-${loggedInUserId}`);
+        if (currentPassword !== storedPassword) {
           toast({ variant: "destructive", title: "Error", description: "Your current password is not correct." });
           setIsLoading(false);
           return;
@@ -88,7 +89,8 @@ export default function ProfilePage() {
           setIsLoading(false);
           return;
         }
-        // In a real app, update password in DB
+        
+        localStorage.setItem(`user-password-${loggedInUserId}`, newPassword);
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
