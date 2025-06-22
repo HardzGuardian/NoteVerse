@@ -20,6 +20,7 @@ Follow these instructions to get a copy of the project up and running on your lo
 - Node.js (v18 or later)
 - npm, yarn, or pnpm
 - A Firebase project
+- [Firebase CLI](https://firebase.google.com/docs/cli) installed on your machine (`npm install -g firebase-tools`)
 
 ### Installation
 
@@ -61,6 +62,30 @@ Follow these instructions to get a copy of the project up and running on your lo
     ```
 
     Open [http://localhost:9002](http://localhost:9002) (or your configured port) with your browser to see the result.
+
+## Deployment
+
+This project is configured to be deployed with **Firebase App Hosting**.
+
+1.  **Login to Firebase:**
+    If you haven't already, log in to your Firebase account through the command line:
+    ```bash
+    firebase login
+    ```
+
+2.  **Initialize App Hosting:**
+    Run the `init` command to connect your local project to your Firebase project.
+    ```bash
+    firebase init apphosting
+    ```
+    Follow the prompts to select your Firebase project and configure the deployment settings. This will create the necessary backend resources in your project.
+
+3.  **Deploy the App:**
+    Once initialized, deploy your app using the following command:
+    ```bash
+    firebase apphosting:backends:deploy
+    ```
+    The CLI will build your Next.js application and deploy it to App Hosting. After it finishes, it will provide you with the live URL for your app.
 
 ## Code Structure
 
