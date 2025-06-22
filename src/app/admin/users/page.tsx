@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -15,6 +16,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 
 type UserRole = "Admin" | "Student" | "Uploader";
 
@@ -23,6 +25,8 @@ export default function UserManagementPage() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
   const [selectedRole, setSelectedRole] = useState<UserRole>("Student");
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [newUserData, setNewUserData] = useState({ name: '', email: '', role: 'Student' as UserRole });
   const { toast } = useToast();
 
   const handleEditRole = (user: User) => {
@@ -50,12 +54,37 @@ export default function UserManagementPage() {
     });
     setUserToDelete(null);
   };
+  
+  const handleAddNewUser = () => {
+    if (!newUserData.name || !newUserData.email) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Name and email are required.",
+      });
+      return;
+    }
+    const newUser: User = {
+        id: `usr${users.length + 1}`,
+        name: newUserData.name,
+        email: newUserData.email,
+        role: newUserData.role,
+        avatar: 'https://placehold.co/100x100.png',
+    };
+    setUsers([...users, newUser]);
+    toast({
+        title: "User Added",
+        description: `${newUser.name} has been added as a ${newUser.role}.`,
+    });
+    setIsAddUserDialogOpen(false);
+    setNewUserData({ name: '', email: '', role: 'Student' });
+  };
 
   const roleVariant = (role: UserRole) => {
     switch(role) {
-      case 'Admin': return 'destructive';
-      case 'Uploader': return 'default';
-      case 'Student': return 'secondary';
+      case 'Admin': return 'default';
+      case 'Uploader': return 'secondary';
+      case 'Student': return 'outline';
       default: return 'outline';
     }
   }
@@ -67,7 +96,7 @@ export default function UserManagementPage() {
           <h2 className="text-2xl font-bold tracking-tight">Manage Users</h2>
           <p className="text-muted-foreground">Edit roles or remove users from the system.</p>
         </div>
-        <Button className="bg-accent hover:bg-accent/90">
+        <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddUserDialogOpen(true)}>
           <UserPlus className="mr-2 h-4 w-4" /> Add User
         </Button>
       </div>
@@ -126,6 +155,56 @@ export default function UserManagementPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {/* Add User Dialog */}
+      <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add New User</DialogTitle>
+            <DialogDescription>
+              Enter the details for the new user and assign them a role.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+             <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input 
+                    id="name" 
+                    placeholder="John Doe"
+                    value={newUserData.name} 
+                    onChange={(e) => setNewUserData({...newUserData, name: e.target.value})}
+                />
+            </div>
+             <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input 
+                    id="email" 
+                    type="email"
+                    placeholder="john.doe@example.com"
+                    value={newUserData.email} 
+                    onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
+                />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="role-select-add">Role</Label>
+              <Select value={newUserData.role} onValueChange={(value: UserRole) => setNewUserData({...newUserData, role: value})}>
+                  <SelectTrigger id="role-select-add">
+                      <SelectValue placeholder="Select a role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      <SelectItem value="Student">Student</SelectItem>
+                      <SelectItem value="Uploader">Uploader</SelectItem>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                  </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddUserDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddNewUser}>Add User</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Role Dialog */}
       <Dialog open={!!userToEdit} onOpenChange={(isOpen) => !isOpen && setUserToEdit(null)}>
