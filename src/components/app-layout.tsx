@@ -105,7 +105,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
               <SidebarMenuButton asChild isActive={pathname.startsWith("/latest-update")}>
                 <Link href="/latest-update">
                   <Bell />
-                  Latest Update
+                  Update
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
