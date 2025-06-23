@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -114,4 +115,57 @@ export default function ResetPasswordPage() {
       </div>
     </div>
   );
+}
+
+const ResetPasswordSkeleton = () => {
+    return (
+        <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+            <div className="w-full max-w-md">
+                <Card className="shadow-2xl">
+                    <CardHeader className="text-center">
+                        <div className="mb-4 flex justify-center">
+                            <div className="bg-primary text-primary-foreground rounded-full p-3">
+                                <ShieldCheck className="h-8 w-8" />
+                            </div>
+                        </div>
+                        <CardTitle className="font-headline text-4xl">Reset Password</CardTitle>
+                        <CardDescription>
+                            Loading...
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>One-Time Password (OTP)</Label>
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>New Password</Label>
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Confirm New Password</Label>
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <Skeleton className="h-10 w-full" />
+                        </div>
+                        <div className="mt-4 text-center text-sm">
+                            Remember your password?{" "}
+                            <Link href="/" className="underline text-primary font-medium">
+                                Log in
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+        </div>
+    );
+};
+
+export default function ResetPasswordPage() {
+    return (
+        <Suspense fallback={<ResetPasswordSkeleton />}>
+            <ResetPasswordForm />
+        </Suspense>
+    )
 }
