@@ -1,6 +1,6 @@
 # NoteVerse
 
-NoteVerse is a Next.js web application for students to access notes and updates, with a separate interface for administrators to manage content. This project was scaffolded using Firebase Studio.
+Welcome to NoteVerse! This is a Next.js web application for students to access notes and updates, with a separate interface for administrators to manage content. This project was built with assistance from Firebase Studio.
 
 ## Features
 
