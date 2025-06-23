@@ -66,7 +66,7 @@ export default function LoginPage() {
     const user = allUsers.find(u => u.email === email);
     const storedPassword = user ? localStorage.getItem(`user-password-${user.id}`) : null;
 
-    if (user && user.role !== 'Admin' && password === storedPassword) {
+    if (user && user.role !== 'Admin' && storedPassword && password === storedPassword) {
       localStorage.setItem('loggedInUserId', user.id);
       router.push("/home");
     } else {
@@ -80,12 +80,11 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    // Guard against unconfigured Firebase
     if (!auth) {
       toast({
         variant: "destructive",
         title: "Firebase Not Configured",
-        description: "Please set up your Firebase credentials in .env.local to enable Google Login.",
+        description: "Please set up your Firebase credentials to enable Google Login.",
       });
       return;
     }
@@ -93,15 +92,58 @@ export default function LoginPage() {
     setIsGoogleLoading(true);
     const provider = new GoogleAuthProvider();
     try {
-      await signInWithPopup(auth, provider);
-      router.push("/home");
-    } catch (error) {
+      const result = await signInWithPopup(auth, provider);
+      const firebaseUser = result.user;
+
+      const storedUsersRaw = localStorage.getItem('all-users');
+      const allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
+      let appUser = allUsers.find(u => u.email === firebaseUser.email);
+      
+      if (!appUser && firebaseUser.email) {
+        // Create a new user if they don't exist
+        const newUserId = `usr${Date.now()}`;
+        appUser = {
+          id: newUserId,
+          name: firebaseUser.displayName || "Google User",
+          email: firebaseUser.email,
+          avatar: firebaseUser.photoURL || 'https://placehold.co/100x100.png',
+          role: 'Student',
+          status: 'online',
+          displayNameHidden: false,
+          canChangeName: true,
+        };
+        allUsers.push(appUser);
+        localStorage.setItem('all-users', JSON.stringify(allUsers));
+        
+        // Store individual user details for consistency
+        localStorage.setItem(`user-name-${newUserId}`, appUser.name);
+        localStorage.setItem(`user-email-${newUserId}`, appUser.email);
+        localStorage.setItem(`user-avatar-${newUserId}`, appUser.avatar);
+        localStorage.setItem(`user-role-${newUserId}`, appUser.role);
+        localStorage.setItem(`user-canChangeName-${newUserId}`, 'true');
+        // Note: We don't set a password for Google-authenticated users
+      }
+      
+      if (appUser) {
+        localStorage.setItem('loggedInUserId', appUser.id);
+        router.push("/home");
+      }
+    } catch (error: any) {
       console.error("Google login error:", error);
-      toast({
-        variant: "destructive",
-        title: "Google Login Failed",
-        description: "Could not log in with Google. Please try again.",
-      });
+      if (error.code === 'auth/unauthorized-domain') {
+          toast({
+              variant: "destructive",
+              title: "Configuration Error",
+              description: "This app's domain is not authorized. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains and add it.",
+              duration: 9000,
+          });
+      } else {
+          toast({
+            variant: "destructive",
+            title: "Google Login Failed",
+            description: "Could not log in with Google. Please try again.",
+          });
+      }
     } finally {
       setIsGoogleLoading(false);
     }
