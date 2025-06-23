@@ -4,32 +4,20 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyBPXee3fFi207wL4IK3p4JtwlhBXHi7JRw",
+  authDomain: "noteverse-2a78d.firebaseapp.com",
+  projectId: "noteverse-2a78d",
+  storageBucket: "noteverse-2a78d.firebasestorage.app",
+  messagingSenderId: "1015813649631",
+  appId: "1:1015813649631:web:f11ee180dcedefaffc656a"
 };
 
-// Check if the config is valid.
-const configIsValid = firebaseConfig.apiKey && firebaseConfig.projectId;
+// Initialize Firebase
+// We check if apps are already initialized to prevent errors during hot-reloads.
+const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
-const app = configIsValid
-  ? getApps().length
-    ? getApp()
-    : initializeApp(firebaseConfig)
-  : null;
-
-const auth = app ? getAuth(app) : null;
-const db = app ? getFirestore(app) : null;
-const storage = app ? getStorage(app) : null;
-
-if (!configIsValid && process.env.NODE_ENV !== "production") {
-  // This warning will appear in the server console during development.
-  console.warn(
-    "Firebase configuration is missing or invalid. Please ensure all NEXT_PUBLIC_FIREBASE_* variables are set in your .env.local file. Firebase-dependent features will be disabled."
-  );
-}
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
 
 export { app, auth, db, storage };
