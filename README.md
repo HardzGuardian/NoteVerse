@@ -10,6 +10,7 @@ NoteVerse is a Next.js web application for students to access notes and updates,
 - **Real-time Updates**: A dedicated section for admins to post updates for all students.
 - **Theming**: Dark and Light mode support, with preference saved locally.
 - **Responsive Design**: A clean, intuitive, and responsive UI built with Next.js, Tailwind CSS, and shadcn/ui.
+- **PWA Ready**: Installable on mobile devices for an app-like experience with offline support.
 
 ## Getting Started
 
@@ -63,9 +64,9 @@ Follow these instructions to get a copy of the project up and running on your lo
 
     Open [http://localhost:9002](http://localhost:9002) (or your configured port) with your browser to see the result.
 
-## Deployment to Firebase App Hosting
+## Deployment to Firebase App Hosting (Free)
 
-This project is configured and ready to be deployed live on the web using **Firebase App Hosting**. Follow these steps carefully to launch your application.
+This project is configured and ready to be deployed live on the web using **Firebase App Hosting**. Follow these steps carefully to launch your application. Firebase offers a generous free tier, so you won't have to pay anything for this.
 
 ### Step 1: Login to Firebase
 
@@ -104,7 +105,7 @@ This is the final step. The command will build your Next.js application, upload 
     firebase apphosting:backends:deploy
     ```
 2.  This process may take a few minutes. The CLI will show you the progress as it builds and deploys your app.
-3.  Once it's finished, the command line will output the **live URL** for your app. You can share this URL with anyone!
+3.  Once it's finished, the command line will output the **live URL** for your app. It will look something like `https://noteverse-backend-xxxx.web.app`. You can share this URL with anyone!
 
 That's it! Your NoteVerse application is now live on the internet. To deploy future updates, you just need to run the `firebase apphosting:backends:deploy` command again.
 
