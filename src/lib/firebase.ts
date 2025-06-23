@@ -5,9 +5,9 @@ import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBPXee3fFi207wL4IK3p4JtwlhBXHi7JRw",
-  authDomain: "noteverse-2a78d.firebaseapp.com",
-  projectId: "noteverse-2a78d",
-  storageBucket: "noteverse-2a78d.firebasestorage.app",
+  authDomain: "project-812484800991.firebaseapp.com",
+  projectId: "project-812484800991",
+  storageBucket: "project-812484800991.appspot.com",
   messagingSenderId: "1015813649631",
   appId: "1:1015813649631:web:f11ee180dcedefaffc656a"
 };
