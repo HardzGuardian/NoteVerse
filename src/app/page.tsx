@@ -109,7 +109,7 @@ export default function LoginPage() {
           avatar: firebaseUser.photoURL || 'https://placehold.co/100x100.png',
           role: 'Student',
           status: 'online',
-          displayNameHidden: false,
+          displayNameHidden: true,
           canChangeName: true,
         };
         allUsers.push(appUser);
