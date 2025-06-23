@@ -130,7 +130,9 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Google login error:", error);
-      if (error.code === 'auth/unauthorized-domain') {
+      if (error.code === 'auth/popup-closed-by-user') {
+        // User cancelled the login, so we don't need to show an error.
+      } else if (error.code === 'auth/unauthorized-domain') {
           toast({
               variant: "destructive",
               title: "Configuration Error",
