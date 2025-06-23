@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
@@ -61,7 +62,8 @@ export default function UsersPage() {
 
   const getDisplayName = (user: User) => {
     if (user.displayNameHidden) {
-      return `${user.role} #${user.id.replace(/\D/g, "")}`;
+      const numericId = user.id.replace(/\D/g, "");
+      return `${user.role} #${numericId.slice(-4)}`;
     }
     return user.name || user.email.split('@')[0];
   };
