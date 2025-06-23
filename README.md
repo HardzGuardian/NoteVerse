@@ -9,7 +9,7 @@ A modern, feature-rich application designed to help students manage their course
 - **Personalized Dashboard:** A central hub that welcomes you and provides quick access to notes and important updates.
 - **Organized Notes:** Easily browse and find materials organized by academic semesters and subjects.
 - **Download Materials:** Download PDF notes and exam papers directly to your device for offline study.
-- **Customizable Profile:** Personalize your account by updating your name and profile picture.
+- **Customizable Profile:** Personalize your account by updating your name and profile picture.~
 - **Community Page:** See a list of other users who are currently online.
 - **App Personalization:** Tailor your experience by switching between light/dark themes and choosing your preferred font.
 

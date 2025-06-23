@@ -42,7 +42,7 @@ export const users: User[] = [
   { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online', displayNameHidden: false, canChangeName: true },
 ];
 
-export const semesters: Semester[] = [
+export const initialSemesters: Semester[] = [
   {
     id: "sem1",
     name: "Semester 1",

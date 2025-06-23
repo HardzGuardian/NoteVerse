@@ -8,20 +8,25 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { semesters as allSemesters } from "@/lib/data";
+import { initialSemesters, Semester } from "@/lib/data";
 import { FileText, ChevronRight, FolderOpen } from "lucide-react";
 
 export default function SubjectsPage() {
   const params = useParams<{ semesterId: string }>();
   const [loading, setLoading] = useState(true);
-  const semester = allSemesters.find((s) => s.id === params.semesterId);
+  const [semester, setSemester] = useState<Semester | undefined>();
 
   useEffect(() => {
+    setLoading(true);
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const foundSemester = allSemesters.find((s) => s.id === params.semesterId);
+    setSemester(foundSemester);
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [params.semesterId]);
 
   if (!semester && !loading) {
     return (

@@ -34,7 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { semesters as initialSemesters, Semester } from "@/lib/data";
+import { initialSemesters, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Book, RefreshCw, MoreVertical, Edit, Trash2 } from "lucide-react";
 
@@ -52,15 +52,17 @@ export default function AdminSemestersPage() {
   const [semesterToDelete, setSemesterToDelete] = useState<Semester | null>(null);
 
   useEffect(() => {
-    setSemesters(initialSemesters);
+    const savedSemesters = localStorage.getItem('semesters');
+    setSemesters(savedSemesters ? JSON.parse(savedSemesters) : initialSemesters);
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 1500);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
   const refreshData = () => {
     setLoading(true);
+    localStorage.setItem('semesters', JSON.stringify(initialSemesters));
     setSemesters(initialSemesters);
     setTimeout(() => setLoading(false), 1000);
   };
@@ -75,7 +77,9 @@ export default function AdminSemestersPage() {
       name: newSemesterName,
       subjects: [],
     };
-    setSemesters(prev => [...prev, newSemester]);
+    const updatedSemesters = [...semesters, newSemester];
+    setSemesters(updatedSemesters);
+    localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
     toast({ title: "Success", description: "New semester added." });
     setNewSemesterName("");
     setIsAddDialogOpen(false);
@@ -91,9 +95,9 @@ export default function AdminSemestersPage() {
       toast({ variant: "destructive", title: "Error", description: "Semester name cannot be empty." });
       return;
     }
-    setSemesters(prev =>
-      prev.map(s => (s.id === semesterToEdit.id ? { ...s, name: editedSemesterName } : s))
-    );
+    const updatedSemesters = semesters.map(s => (s.id === semesterToEdit.id ? { ...s, name: editedSemesterName } : s));
+    setSemesters(updatedSemesters);
+    localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
     toast({ title: "Success", description: `Semester renamed to "${editedSemesterName}".` });
     setSemesterToEdit(null);
     setEditedSemesterName("");
@@ -101,7 +105,9 @@ export default function AdminSemestersPage() {
 
   const handleDeleteSemester = () => {
     if (!semesterToDelete) return;
-    setSemesters(prev => prev.filter(s => s.id !== semesterToDelete.id));
+    const updatedSemesters = semesters.filter(s => s.id !== semesterToDelete.id);
+    setSemesters(updatedSemesters);
+    localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
     toast({ variant: "destructive", title: "Deleted", description: `Semester "${semesterToDelete.name}" has been deleted.` });
     setSemesterToDelete(null);
   };
@@ -114,7 +120,7 @@ export default function AdminSemestersPage() {
           <p className="text-muted-foreground">Add, rename, or delete semesters.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={refreshData}><RefreshCw className="mr-2 h-4 w-4"/> Refresh</Button>
+          <Button variant="outline" onClick={refreshData}><RefreshCw className="mr-2 h-4 w-4"/> Reset to Default</Button>
           <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Semester
           </Button>

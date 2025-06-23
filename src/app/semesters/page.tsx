@@ -7,22 +7,22 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { semesters as allSemesters } from "@/lib/data";
+import { initialSemesters, Semester } from "@/lib/data";
 import { Book, RefreshCw } from "lucide-react";
 
 export default function SemestersPage() {
   const [loading, setLoading] = useState(true);
+  const [semesters, setSemesters] = useState<Semester[]>([]);
 
-  const refreshData = () => {
+  const loadData = () => {
     setLoading(true);
+    const savedSemesters = localStorage.getItem('semesters');
+    setSemesters(savedSemesters ? JSON.parse(savedSemesters) : initialSemesters);
     setTimeout(() => setLoading(false), 1000);
   }
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1500);
-    return () => clearTimeout(timer);
+    loadData();
   }, []);
 
   return (
@@ -33,7 +33,7 @@ export default function SemestersPage() {
           <p className="text-muted-foreground">Select a semester to view its subjects, notes, and exam papers.</p>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline" onClick={refreshData}><RefreshCw className="mr-2 h-4 w-4"/> Refresh</Button>
+            <Button variant="outline" onClick={loadData}><RefreshCw className="mr-2 h-4 w-4"/> Refresh</Button>
         </div>
       </div>
 
@@ -49,7 +49,7 @@ export default function SemestersPage() {
                 </CardContent>
               </Card>
             ))
-          : allSemesters.map((semester) => (
+          : semesters.map((semester) => (
               <Link href={`/semesters/${semester.id}`} key={semester.id}>
                 <Card className="hover:shadow-lg hover:border-primary transition-all duration-300 h-full">
                   <CardHeader className="flex flex-row items-center gap-4 space-y-0">

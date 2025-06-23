@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { semesters as allSemesters, PDF } from "@/lib/data";
+import { initialSemesters, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -78,16 +78,20 @@ export default function PDFsPage() {
   const params = useParams<{ semesterId: string; subjectId: string }>();
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-
-  const semester = allSemesters.find((s) => s.id === params.semesterId);
-  const subject = semester?.subjects.find((sub) => sub.id === params.subjectId);
+  const [subject, setSubject] = useState<Subject | undefined>();
 
   useEffect(() => {
+    setLoading(true);
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const semester = allSemesters.find((s) => s.id === params.semesterId);
+    const currentSubject = semester?.subjects.find((sub) => sub.id === params.subjectId);
+    setSubject(currentSubject);
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
-  }, []);
+  }, [params.semesterId, params.subjectId]);
   
   const handleDownload = (title: string) => {
     toast({

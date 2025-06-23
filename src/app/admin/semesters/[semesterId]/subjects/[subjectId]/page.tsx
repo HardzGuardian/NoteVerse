@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { semesters as allSemesters, PDF, Subject } from "@/lib/data";
+import { initialSemesters, PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -111,20 +111,20 @@ export default function AdminPDFsPage() {
   const [pdfToDelete, setPdfToDelete] = useState<PDF | null>(null);
 
   useEffect(() => {
-    // In a real app, you would fetch this data from a database.
-    // For this mock, we simulate a network delay.
-    const timer = setTimeout(() => {
-      const currentSemester = allSemesters.find((s) => s.id === params.semesterId);
-      const currentSubject = currentSemester?.subjects.find((sub) => sub.id === params.subjectId);
-      // Deep copy to prevent modifying the original data object
-      setSubject(currentSubject ? JSON.parse(JSON.stringify(currentSubject)) : undefined);
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    setLoading(true);
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const currentSemester = allSemesters.find((s) => s.id === params.semesterId);
+    const currentSubject = currentSemester?.subjects.find((sub) => sub.id === params.subjectId);
+    setSubject(currentSubject ? JSON.parse(JSON.stringify(currentSubject)) : undefined);
+    setLoading(false);
   }, [params.semesterId, params.subjectId]);
+
+  const updateSemestersInStorage = (updatedSemesters: Semester[]) => {
+    localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
+  };
   
   const handleDownload = (title: string) => {
-    // In a real app, this would trigger a file download from a blob storage URL.
     toast({
       title: "Downloading...",
       description: `${title} has started downloading.`,
@@ -137,11 +137,30 @@ export default function AdminPDFsPage() {
   };
   
   const handleUpdatePdf = () => {
-    // In a real app, this would be an API call to update the database.
     if (!pdfToEdit || !editedPdfTitle.trim() || !subject) {
         toast({ variant: "destructive", title: "Error", description: "File title cannot be empty." });
         return;
     }
+
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const updatedSemesters = allSemesters.map(s => {
+        if (s.id === params.semesterId) {
+            const updatedSubjects = s.subjects.map(sub => {
+                if (sub.id === params.subjectId) {
+                    const updatedPdfs = sub.pdfs.map(p => 
+                        p.id === pdfToEdit.id ? { ...p, title: editedPdfTitle } : p
+                    );
+                    return { ...sub, pdfs: updatedPdfs };
+                }
+                return sub;
+            });
+            return { ...s, subjects: updatedSubjects };
+        }
+        return s;
+    });
+
+    updateSemestersInStorage(updatedSemesters);
     setSubject(prev => prev ? {
       ...prev,
       pdfs: prev.pdfs.map(p => p.id === pdfToEdit.id ? { ...p, title: editedPdfTitle } : p)
@@ -151,8 +170,24 @@ export default function AdminPDFsPage() {
   };
   
   const handleDeletePdf = () => {
-    // In a real app, this would be an API call to delete from the database and blob storage.
     if (!pdfToDelete || !subject) return;
+
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const updatedSemesters = allSemesters.map(s => {
+        if (s.id === params.semesterId) {
+            const updatedSubjects = s.subjects.map(sub => {
+                if (sub.id === params.subjectId) {
+                    return { ...sub, pdfs: sub.pdfs.filter(p => p.id !== pdfToDelete.id) };
+                }
+                return sub;
+            });
+            return { ...s, subjects: updatedSubjects };
+        }
+        return s;
+    });
+
+    updateSemestersInStorage(updatedSemesters);
     setSubject(prev => prev ? {
       ...prev,
       pdfs: prev.pdfs.filter(p => p.id !== pdfToDelete.id)
@@ -168,7 +203,6 @@ export default function AdminPDFsPage() {
   };
 
   const handleUploadFile = () => {
-    // In a real app, this would upload the file to blob storage and save the URL to the database.
     if (!newFileData.title.trim() || !fileToUpload) {
       toast({ variant: "destructive", title: "Error", description: "Please provide a title and select a file." });
       return;
@@ -183,8 +217,23 @@ export default function AdminPDFsPage() {
       createdAt: new Date().toISOString().split('T')[0],
     };
 
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const updatedSemesters = allSemesters.map(s => {
+        if (s.id === params.semesterId) {
+            const updatedSubjects = s.subjects.map(sub => {
+                if (sub.id === params.subjectId) {
+                    return { ...sub, pdfs: [...sub.pdfs, newPdf] };
+                }
+                return sub;
+            });
+            return { ...s, subjects: updatedSubjects };
+        }
+        return s;
+    });
+    
+    updateSemestersInStorage(updatedSemesters);
     setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
-
     toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
     setIsUploadDialogOpen(false);
     setNewFileData({ title: "", category: "Note" });

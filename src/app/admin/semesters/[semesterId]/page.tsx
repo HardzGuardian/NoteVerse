@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { semesters as allSemesters, Semester, Subject } from "@/lib/data";
+import { initialSemesters, Semester, Subject } from "@/lib/data";
 import { PlusCircle, FileText, FolderOpen, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function AdminSubjectsPage() {
@@ -31,13 +31,17 @@ export default function AdminSubjectsPage() {
   const { toast } = useToast();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      const foundSemester = allSemesters.find((s) => s.id === params.semesterId);
-      setSemester(foundSemester ? JSON.parse(JSON.stringify(foundSemester)) : undefined);
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    setLoading(true);
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const foundSemester = allSemesters.find((s) => s.id === params.semesterId);
+    setSemester(foundSemester ? JSON.parse(JSON.stringify(foundSemester)) : undefined);
+    setLoading(false);
   }, [params.semesterId]);
+
+  const updateSemestersInStorage = (updatedSemesters: Semester[]) => {
+    localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
+  };
 
   const handleAddSubject = () => {
     if (!newSubjectName.trim()) {
@@ -52,6 +56,16 @@ export default function AdminSubjectsPage() {
       pdfs: [],
     };
 
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const updatedSemesters = allSemesters.map(s => {
+        if (s.id === semester.id) {
+            return { ...s, subjects: [...s.subjects, newSubject] };
+        }
+        return s;
+    });
+
+    updateSemestersInStorage(updatedSemesters);
     setSemester(prev => prev ? { ...prev, subjects: [...prev.subjects, newSubject] } : undefined);
     toast({ title: "Success", description: "New subject added." });
     setNewSubjectName("");
@@ -68,6 +82,20 @@ export default function AdminSubjectsPage() {
       toast({ variant: "destructive", title: "Error", description: "Subject name cannot be empty." });
       return;
     }
+    
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const updatedSemesters = allSemesters.map(s => {
+        if (s.id === semester.id) {
+            const updatedSubjects = s.subjects.map(sub => 
+                sub.id === subjectToEdit.id ? { ...sub, name: editedSubjectName } : sub
+            );
+            return { ...s, subjects: updatedSubjects };
+        }
+        return s;
+    });
+    
+    updateSemestersInStorage(updatedSemesters);
     setSemester(prev => prev ? {
       ...prev,
       subjects: prev.subjects.map(s => (s.id === subjectToEdit.id ? { ...s, name: editedSubjectName } : s))
@@ -78,6 +106,17 @@ export default function AdminSubjectsPage() {
   
   const handleDeleteSubject = () => {
     if (!subjectToDelete || !semester) return;
+
+    const savedSemestersRaw = localStorage.getItem('semesters');
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const updatedSemesters = allSemesters.map(s => {
+        if (s.id === semester.id) {
+            return { ...s, subjects: s.subjects.filter(sub => sub.id !== subjectToDelete.id) };
+        }
+        return s;
+    });
+
+    updateSemestersInStorage(updatedSemesters);
     setSemester(prev => prev ? {
         ...prev,
         subjects: prev.subjects.filter(s => s.id !== subjectToDelete.id)
