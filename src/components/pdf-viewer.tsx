@@ -13,9 +13,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Configure the PDF.js worker using a reliable CDN.
-// This dynamically creates the worker URL based on the installed version of pdfjs-dist.
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// Configure the PDF.js worker to be loaded from the local build using import.meta.url.
+// This is the most reliable method for Next.js and other modern bundlers.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 export default function PdfViewer() {
   const searchParams = useSearchParams();
