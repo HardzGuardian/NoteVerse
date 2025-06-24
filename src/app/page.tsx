@@ -1,82 +1,56 @@
 
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen, Shield, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 import { auth } from "@/lib/firebase";
 import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { users as initialUsers, User } from "@/lib/data";
+import { Loader2, Shield } from "lucide-react";
 
 const GoogleIcon = () => (
-    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.63 1.9-3.87 0-7-3.13-7-7s3.13-7 7-7c2.25 0 3.67.9 4.54 1.74l2.42-2.42C18.14 2.09 15.61 1 12.48 1 7.03 1 3 5.03 3 10.5s4.03 9.5 9.48 9.5c2.83 0 5.1-1 6.75-2.6s2.4-4 2.4-6.6c0-.6-.05-1.2-.15-1.78Z"/></svg>
+    <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" className="mr-2 h-4 w-4"><title>Google</title><path d="M12.48 10.92v3.28h7.84c-.24 1.84-.85 3.18-1.73 4.1-1.02 1.02-2.62 1.9-4.63 1.9-3.87 0-7-3.13-7-7s3.13-7 7-7c2.25 0 3.67.9 4.54 1.74l2.42-2.42C18.14 2.09 15.61 1 12.48 1 7.03 1 3 5.03 3 10.5s4.03 9.5 9.48 9.5c2.83 0 5.1-1 6.75-2.6s2.4-4 2.4-6.6c0-.6-.05-1.2-.15-1.78Z"/></svg>
 );
 
-const DEFAULT_BG = "https://placehold.co/1920x1080.png";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginAttempts, setLoginAttempts] = useState(0);
   const router = useRouter();
   const { toast } = useToast();
-  const [background, setBackground] = useState(DEFAULT_BG);
-  const [overlayOpacity, setOverlayOpacity] = useState(50);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
 
-  useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "login-background-image" && e.newValue) {
-        setBackground(e.newValue);
-      }
-      if (e.key === "login-overlay-opacity" && e.newValue) {
-        setOverlayOpacity(Number(e.newValue));
-      }
-    };
+  const handleLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsEmailLoading(true);
 
-    // Set initial values from localStorage
-    const savedBg = localStorage.getItem("login-background-image");
-    if (savedBg) {
-      setBackground(savedBg);
-    }
-    const savedOpacity = localStorage.getItem("login-overlay-opacity");
-    if (savedOpacity) {
-      setOverlayOpacity(Number(savedOpacity));
-    }
-
-    // Listen for changes from other tabs
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
-
-  const handleLogin = () => {
+    // This is a mock login. In a real app, you'd validate against a database.
     const storedUsersRaw = localStorage.getItem('all-users');
     const allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
 
     const user = allUsers.find(u => u.email === email);
     const storedPassword = user ? localStorage.getItem(`user-password-${user.id}`) : null;
 
-    if (user && user.role !== 'Admin' && storedPassword && password === storedPassword) {
-      localStorage.setItem('loggedInUserId', user.id);
-      router.push("/home");
-    } else {
-      setLoginAttempts((prev) => prev + 1);
-      toast({
-        variant: "destructive",
-        title: "Login Failed",
-        description: "Invalid email or password.",
-      });
-    }
+    setTimeout(() => {
+        if (user && user.role !== 'Admin' && storedPassword && password === storedPassword) {
+            localStorage.setItem('loggedInUserId', user.id);
+            router.push("/home");
+        } else {
+            toast({
+                variant: "destructive",
+                title: "Login Failed",
+                description: "Invalid email or password.",
+            });
+        }
+        setIsEmailLoading(false);
+    }, 1000);
   };
 
   const handleGoogleLogin = async () => {
@@ -130,16 +104,7 @@ export default function LoginPage() {
       }
     } catch (error: any) {
       console.error("Google login error:", error);
-      if (error.code === 'auth/popup-closed-by-user') {
-        // User cancelled the login, so we don't need to show an error.
-      } else if (error.code === 'auth/unauthorized-domain') {
-          toast({
-              variant: "destructive",
-              title: "Configuration Error",
-              description: "This app's domain is not authorized. Go to Firebase Console -> Authentication -> Settings -> Authorized Domains and add it.",
-              duration: 9000,
-          });
-      } else {
+       if (error.code !== 'auth/popup-closed-by-user') {
           toast({
             variant: "destructive",
             title: "Google Login Failed",
@@ -152,95 +117,106 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${background}')` }} data-ai-hint="abstract background">
-      <div style={{ backgroundColor: `rgba(0, 0, 0, ${overlayOpacity / 100})` }} className={cn("flex min-h-screen flex-col items-center justify-center p-4", overlayOpacity > 0 && "backdrop-blur-sm")}>
-        <div className="w-full max-w-md">
-          <Card className="shadow-2xl">
-            <CardHeader className="text-center">
-              <div className="mb-4 flex justify-center">
-                  <div className="bg-primary text-primary-foreground rounded-full p-3">
-                      <BookOpen className="h-8 w-8" />
-                  </div>
-              </div>
-              <CardTitle className="font-headline text-4xl">NoteVerse</CardTitle>
-              <CardDescription>Welcome back! Please log in to continue.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Button variant="outline" className="w-full" onClick={handleGoogleLogin} disabled={isGoogleLoading}>
+    <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2">
+      <div className="flex items-center justify-center py-12">
+        <div className="mx-auto grid w-[350px] gap-6">
+          <div className="grid gap-2 text-center">
+            <h1 className="text-3xl font-bold">Login</h1>
+            <p className="text-balance text-muted-foreground">
+              Enter your credentials to access your account
+            </p>
+          </div>
+          <form onSubmit={handleLogin}>
+            <div className="grid gap-4">
+                <Button variant="outline" type="button" onClick={handleGoogleLogin} disabled={isGoogleLoading || isEmailLoading}>
                   {isGoogleLoading ? (
-                    <Loader2 className="animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
                     <GoogleIcon />
                   )}
-                  {isGoogleLoading ? "Signing in..." : "Continue with Google"}
+                  Login with Google
                 </Button>
-
+                
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
                     <span className="bg-background px-2 text-muted-foreground">
-                      Or continue with email
+                      Or continue with
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email" 
-                    placeholder="student@example.com" 
-                    required 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                  />
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="m@example.com"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={isGoogleLoading || isEmailLoading}
+                />
+              </div>
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                  <Link
+                    href="/forgot-password"
+                    className="ml-auto inline-block text-sm underline"
+                  >
+                    Forgot your password?
+                  </Link>
                 </div>
-                <div className="space-y-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    {loginAttempts >= 2 && (
-                      <Link
-                        href="/forgot-password"
-                        className="ml-auto inline-block text-sm underline text-primary font-medium"
-                      >
-                        Forgot password?
-                      </Link>
-                    )}
-                  </div>
-                  <Input 
+                <Input 
                     id="password" 
-                    type="password"
-                    placeholder="••••••••"
+                    type="password" 
                     required 
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-                <div className="flex flex-col gap-3 pt-2">
-                  <Button onClick={handleLogin} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground font-bold">
-                    Login as Student
-                  </Button>
-                  <Button asChild variant="outline" className="w-full">
-                    <Link href="/admin/login">
-                      <Shield />
-                      Login as Admin
-                    </Link>
-                  </Button>
-                </div>
+                    disabled={isGoogleLoading || isEmailLoading}
+                />
               </div>
-              <div className="mt-4 text-center text-sm">
-                Don't have an account?{" "}
-                <Link href="/signup" className="underline text-primary font-medium">
-                  Sign up
+              <Button type="submit" className="w-full" disabled={isGoogleLoading || isEmailLoading}>
+                 {isEmailLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Login
+              </Button>
+            </div>
+          </form>
+          <div className="mt-4 text-center text-sm">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="underline">
+              Sign up
+            </Link>
+          </div>
+          <div className="text-center text-sm">
+            <Button asChild variant="link" className="p-0 h-auto">
+                <Link href="/admin/login">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Login as Admin
                 </Link>
-              </div>
-            </CardContent>
-          </Card>
+            </Button>
+          </div>
         </div>
       </div>
+      <div className="hidden bg-muted lg:flex flex-col items-center justify-center p-10 text-center">
+        <div className="relative">
+            <Image
+                src="https://placehold.co/800x600.png"
+                alt="Image"
+                width="800"
+                height="600"
+                className="rounded-lg shadow-2xl"
+                data-ai-hint="digital abstract"
+            />
+        </div>
+        <h1 className="font-headline text-4xl font-bold mt-8">NoteVerse</h1>
+        <p className="text-muted-foreground mt-2 max-w-sm">
+            Your all-in-one solution for organized notes and seamless collaboration.
+        </p>
+      </div>
     </div>
-  );
+  )
 }
