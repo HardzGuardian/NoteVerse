@@ -38,6 +38,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { users } from "@/lib/data";
+import { Skeleton } from "./ui/skeleton";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -48,11 +49,14 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const pathname = usePathname();
   const [avatar, setAvatar] = useState("https://placehold.co/100x100.png");
   const [userName, setUserName] = useState("U");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const updateAvatarAndName = () => {
         const loggedInUserId = localStorage.getItem('loggedInUserId');
-        if (!loggedInUserId) return;
+        if (!loggedInUserId) {
+            return;
+        }
 
         const currentUser = users.find(u => u.id === loggedInUserId);
 
@@ -67,6 +71,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
     };
 
     updateAvatarAndName();
+    setMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
         const loggedInUserId = localStorage.getItem('loggedInUserId');
@@ -152,10 +157,14 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar>
-                  <AvatarImage src={avatar} alt="User" data-ai-hint="person avatar" />
-                  <AvatarFallback>{(userName.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
-                </Avatar>
+                {mounted ? (
+                  <Avatar>
+                    <AvatarImage src={avatar} alt="User" data-ai-hint="person avatar" />
+                    <AvatarFallback>{(userName.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">

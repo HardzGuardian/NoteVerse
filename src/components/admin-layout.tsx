@@ -39,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { users } from "@/lib/data";
+import { Skeleton } from "./ui/skeleton";
 
 type AdminLayoutProps = {
   children: React.ReactNode;
@@ -52,6 +53,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
   const pathname = usePathname();
   const [adminAvatar, setAdminAvatar] = useState("https://placehold.co/100x100.png");
   const [adminFallback, setAdminFallback] = useState("A");
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const updateAdminDetails = () => {
@@ -67,6 +69,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
     };
 
     updateAdminDetails();
+    setMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === `user-avatar-${adminUserId}` || event.key === `user-name-${adminUserId}`) {
@@ -97,7 +100,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
         <SidebarContent>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === "/admin"}>
+              <SidebarMenuButton asChild isActive={pathname === "/admin" || pathname === "/admin/home"}>
                 <Link href="/admin">
                   <LayoutDashboard />
                   Dashboard
@@ -159,10 +162,14 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar>
-                  <AvatarImage src={adminAvatar} alt="Admin User" data-ai-hint="person avatar" />
-                  <AvatarFallback>{adminFallback}</AvatarFallback>
-                </Avatar>
+                {mounted ? (
+                  <Avatar>
+                    <AvatarImage src={adminAvatar} alt="Admin User" data-ai-hint="person avatar" />
+                    <AvatarFallback>{adminFallback}</AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <Skeleton className="h-10 w-10 rounded-full" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
