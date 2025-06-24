@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -14,16 +14,17 @@ import { Semester, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import PdfViewer from "@/components/pdf-viewer";
 
 type PDFTableProps = {
   pdfs: PDF[];
   onDownload: (pdf: PDF) => void;
   type: 'Note' | 'Exam';
+  onView: (pdf: PDF) => void;
 };
 
-const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
-  const router = useRouter();
-
+const PDFTable = ({ pdfs, onDownload, type, onView }: PDFTableProps) => {
   if (pdfs.length === 0) {
     return (
       <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -50,7 +51,7 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
             <TableRow 
                 key={pdf.id}
                 className="cursor-pointer"
-                onClick={() => router.push(`/view-pdf?fileId=${pdf.fileId}&title=${encodeURIComponent(pdf.title)}`)}
+                onClick={() => onView(pdf)}
             >
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
@@ -88,6 +89,7 @@ export default function PDFsPage() {
   const { toast } = useToast();
   const [subject, setSubject] = useState<Subject | undefined>();
   const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [pdfToView, setPdfToView] = useState<PDF | null>(null);
 
   useEffect(() => {
     setLoading(true);
@@ -152,14 +154,20 @@ export default function PDFsPage() {
               <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="notes">
-              <PDFTable pdfs={notes} onDownload={handleDownload} type="Note" />
+              <PDFTable pdfs={notes} onDownload={handleDownload} type="Note" onView={setPdfToView} />
             </TabsContent>
             <TabsContent value="exams">
-              <PDFTable pdfs={exams} onDownload={handleDownload} type="Exam" />
+              <PDFTable pdfs={exams} onDownload={handleDownload} type="Exam" onView={setPdfToView} />
             </TabsContent>
           </Tabs>
         )}
       </Card>
+
+      <Dialog open={!!pdfToView} onOpenChange={(isOpen) => !isOpen && setPdfToView(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] p-0">
+          {pdfToView && <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />}
+        </DialogContent>
+      </Dialog>
     </AppLayout>
   );
 }

@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -12,13 +11,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Edit, Eye, Link2, Loader2 } from "lucide-react";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Edit, Eye, Link2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import PdfViewer from "@/components/pdf-viewer";
 
 type PDFTableProps = {
   pdfs: PDF[];
@@ -27,9 +27,10 @@ type PDFTableProps = {
   onDelete: (pdf: PDF) => void;
   onAdd: () => void;
   type: 'Note' | 'Exam';
+  onView: (pdf: PDF) => void;
 };
 
-const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onAdd, type }: PDFTableProps) => {
+const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onAdd, type, onView }: PDFTableProps) => {
   if (pdfs.length === 0) {
     return (
       <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -72,10 +73,8 @@ const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onAdd, type }: PDFTabl
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem asChild>
-                      <Link href={`/view-pdf?fileId=${pdf.fileId}&title=${encodeURIComponent(pdf.title)}`} target="_blank">
-                          <Eye className="mr-2 h-4 w-4" /> View
-                      </Link>
+                  <DropdownMenuItem onSelect={() => onView(pdf)}>
+                      <Eye className="mr-2 h-4 w-4" /> View
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onDownload(pdf)}>
                     <Download className="mr-2 h-4 w-4" /> Download
@@ -113,6 +112,7 @@ export default function AdminPDFsPage() {
   const [editedPdfTitle, setEditedPdfTitle] = useState("");
   
   const [pdfToDelete, setPdfToDelete] = useState<PDF | null>(null);
+  const [pdfToView, setPdfToView] = useState<PDF | null>(null);
 
   const setUpdateNote = (message: string) => {
     const currentDate = new Date().toISOString().split('T')[0];
@@ -297,10 +297,10 @@ export default function AdminPDFsPage() {
               <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="notes">
-              <PDFTable pdfs={notes} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Note" onAdd={() => setIsAddDialogOpen(true)} />
+              <PDFTable pdfs={notes} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Note" onAdd={() => setIsAddDialogOpen(true)} onView={setPdfToView}/>
             </TabsContent>
             <TabsContent value="exams">
-              <PDFTable pdfs={exams} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Exam" onAdd={() => setIsAddDialogOpen(true)} />
+              <PDFTable pdfs={exams} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Exam" onAdd={() => setIsAddDialogOpen(true)} onView={setPdfToView}/>
             </TabsContent>
           </Tabs>
         )}
@@ -400,6 +400,12 @@ export default function AdminPDFsPage() {
               </AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!pdfToView} onOpenChange={(isOpen) => !isOpen && setPdfToView(null)}>
+        <DialogContent className="max-w-4xl h-[90vh] p-0">
+          {pdfToView && <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />}
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }
