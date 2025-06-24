@@ -7,9 +7,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Set the workerSrc to a reliable CDN. This is the most common fix for "Failed to fetch" errors.
-// We are pinning it to the exact version of pdfjs-dist we are using to ensure compatibility.
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js`;
+// The new, recommended way to set up the worker for Next.js App Router.
+// This uses Webpack's ability to resolve and bundle the worker script.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 import { AppLayout } from '@/components/app-layout';
 import { Button } from '@/components/ui/button';
