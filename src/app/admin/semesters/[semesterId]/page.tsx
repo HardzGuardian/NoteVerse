@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { initialSemesters, Semester, Subject } from "@/lib/data";
+import { Semester, Subject } from "@/lib/data";
 import { PlusCircle, FileText, FolderOpen, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function AdminSubjectsPage() {
@@ -29,11 +29,17 @@ export default function AdminSubjectsPage() {
   const [subjectToDelete, setSubjectToDelete] = useState<Subject | null>(null);
 
   const { toast } = useToast();
+  
+  const setUpdateNote = (message: string) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    localStorage.setItem('update-note-text', message);
+    localStorage.setItem('update-note-date', currentDate);
+  };
 
   useEffect(() => {
     setLoading(true);
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const foundSemester = allSemesters.find((s) => s.id === params.semesterId);
     setSemester(foundSemester ? JSON.parse(JSON.stringify(foundSemester)) : undefined);
     setLoading(false);
@@ -57,7 +63,7 @@ export default function AdminSubjectsPage() {
     };
 
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
         if (s.id === semester.id) {
             return { ...s, subjects: [...s.subjects, newSubject] };
@@ -67,6 +73,7 @@ export default function AdminSubjectsPage() {
 
     updateSemestersInStorage(updatedSemesters);
     setSemester(prev => prev ? { ...prev, subjects: [...prev.subjects, newSubject] } : undefined);
+    setUpdateNote(`New subject "${newSubjectName}" was added to ${semester.name}.`);
     toast({ title: "Success", description: "New subject added." });
     setNewSubjectName("");
     setIsAddDialogOpen(false);
@@ -84,7 +91,7 @@ export default function AdminSubjectsPage() {
     }
     
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
         if (s.id === semester.id) {
             const updatedSubjects = s.subjects.map(sub => 
@@ -100,6 +107,7 @@ export default function AdminSubjectsPage() {
       ...prev,
       subjects: prev.subjects.map(s => (s.id === subjectToEdit.id ? { ...s, name: editedSubjectName } : s))
     } : undefined);
+    setUpdateNote(`Subject "${subjectToEdit.name}" was renamed to "${editedSubjectName}" in ${semester.name}.`);
     toast({ title: "Success", description: `Subject renamed to "${editedSubjectName}".` });
     setSubjectToEdit(null);
   };
@@ -108,7 +116,7 @@ export default function AdminSubjectsPage() {
     if (!subjectToDelete || !semester) return;
 
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
         if (s.id === semester.id) {
             return { ...s, subjects: s.subjects.filter(sub => sub.id !== subjectToDelete.id) };
@@ -121,6 +129,7 @@ export default function AdminSubjectsPage() {
         ...prev,
         subjects: prev.subjects.filter(s => s.id !== subjectToDelete.id)
     } : undefined);
+    setUpdateNote(`Subject "${subjectToDelete.name}" was deleted from ${semester.name}.`);
     toast({ variant: "destructive", title: "Deleted", description: `Subject "${subjectToDelete.name}" has been deleted.` });
     setSubjectToDelete(null);
   };

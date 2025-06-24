@@ -34,7 +34,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { initialSemesters, Semester } from "@/lib/data";
+import { Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Book, MoreVertical, Edit, Trash2 } from "lucide-react";
 
@@ -53,12 +53,18 @@ export default function AdminSemestersPage() {
 
   useEffect(() => {
     const savedSemesters = localStorage.getItem('semesters');
-    setSemesters(savedSemesters ? JSON.parse(savedSemesters) : initialSemesters);
+    setSemesters(savedSemesters ? JSON.parse(savedSemesters) : []);
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
+
+  const setUpdateNote = (message: string) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    localStorage.setItem('update-note-text', message);
+    localStorage.setItem('update-note-date', currentDate);
+  };
 
   const handleAddSemester = () => {
     if (!newSemesterName.trim()) {
@@ -73,6 +79,7 @@ export default function AdminSemestersPage() {
     const updatedSemesters = [...semesters, newSemester];
     setSemesters(updatedSemesters);
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
+    setUpdateNote(`New semester "${newSemesterName}" has been added.`);
     toast({ title: "Success", description: "New semester added." });
     setNewSemesterName("");
     setIsAddDialogOpen(false);
@@ -91,6 +98,7 @@ export default function AdminSemestersPage() {
     const updatedSemesters = semesters.map(s => (s.id === semesterToEdit.id ? { ...s, name: editedSemesterName } : s));
     setSemesters(updatedSemesters);
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
+    setUpdateNote(`Semester "${semesterToEdit.name}" has been renamed to "${editedSemesterName}".`);
     toast({ title: "Success", description: `Semester renamed to "${editedSemesterName}".` });
     setSemesterToEdit(null);
     setEditedSemesterName("");
@@ -101,6 +109,7 @@ export default function AdminSemestersPage() {
     const updatedSemesters = semesters.filter(s => s.id !== semesterToDelete.id);
     setSemesters(updatedSemesters);
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
+    setUpdateNote(`Semester "${semesterToDelete.name}" has been deleted.`);
     toast({ variant: "destructive", title: "Deleted", description: `Semester "${semesterToDelete.name}" has been deleted.` });
     setSemesterToDelete(null);
   };

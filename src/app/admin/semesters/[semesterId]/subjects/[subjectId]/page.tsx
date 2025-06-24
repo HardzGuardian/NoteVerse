@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { initialSemesters, PDF, Subject, Semester } from "@/lib/data";
+import { PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit, Eye } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -115,10 +115,16 @@ export default function AdminPDFsPage() {
   
   const [pdfToDelete, setPdfToDelete] = useState<PDF | null>(null);
 
+  const setUpdateNote = (message: string) => {
+    const currentDate = new Date().toISOString().split('T')[0];
+    localStorage.setItem('update-note-text', message);
+    localStorage.setItem('update-note-date', currentDate);
+  };
+
   useEffect(() => {
     setLoading(true);
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const currentSemester = allSemesters.find((s) => s.id === params.semesterId);
     const currentSubject = currentSemester?.subjects.find((sub) => sub.id === params.subjectId);
     setSubject(currentSubject ? JSON.parse(JSON.stringify(currentSubject)) : undefined);
@@ -148,7 +154,7 @@ export default function AdminPDFsPage() {
     }
 
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
         if (s.id === params.semesterId) {
             const updatedSubjects = s.subjects.map(sub => {
@@ -170,6 +176,7 @@ export default function AdminPDFsPage() {
       ...prev,
       pdfs: prev.pdfs.map(p => p.id === pdfToEdit.id ? { ...p, title: editedPdfTitle } : p)
     } : undefined);
+    setUpdateNote(`File "${pdfToEdit.title}" was renamed to "${editedPdfTitle}" in ${subject.name}.`);
     toast({ title: "Success", description: `File renamed to "${editedPdfTitle}".` });
     setPdfToEdit(null);
   };
@@ -178,7 +185,7 @@ export default function AdminPDFsPage() {
     if (!pdfToDelete || !subject) return;
 
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
         if (s.id === params.semesterId) {
             const updatedSubjects = s.subjects.map(sub => {
@@ -197,6 +204,7 @@ export default function AdminPDFsPage() {
       ...prev,
       pdfs: prev.pdfs.filter(p => p.id !== pdfToDelete.id)
     } : undefined);
+    setUpdateNote(`File "${pdfToDelete.title}" was deleted from ${subject.name}.`);
     toast({ variant: "destructive", title: "Deleted", description: `File "${pdfToDelete.title}" has been deleted.` });
     setPdfToDelete(null);
   };
@@ -223,7 +231,7 @@ export default function AdminPDFsPage() {
     };
 
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
         if (s.id === params.semesterId) {
             const updatedSubjects = s.subjects.map(sub => {
@@ -239,6 +247,7 @@ export default function AdminPDFsPage() {
     
     updateSemestersInStorage(updatedSemesters);
     setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
+    setUpdateNote(`New ${newFileData.category} "${newFileData.title}" was uploaded to ${subject.name}.`);
     toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
     setIsUploadDialogOpen(false);
     setNewFileData({ title: "", category: "Note" });
