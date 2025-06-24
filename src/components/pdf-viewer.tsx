@@ -7,8 +7,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// Configure the worker from a reliable CDN. This is the most stable method.
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+// This modern approach uses `import.meta.url` to correctly resolve the path to the worker file
+// from the node_modules directory. This makes it bundler-friendly and is the most reliable method.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.js',
+  import.meta.url,
+).toString();
 
 import { AppLayout } from '@/components/app-layout';
 import { Button } from '@/components/ui/button';
