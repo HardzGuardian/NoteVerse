@@ -1,39 +1,44 @@
-
 "use client";
 
 import { Suspense } from 'react';
-import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { AppLayout } from '@/components/app-layout';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import PdfViewer from '@/components/pdf-viewer';
 
-const PdfViewerSkeleton = () => (
-    <AppLayout pageTitle="Loading PDF...">
-        <Card className="w-full">
-            <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <Skeleton className="h-8 w-1/2" />
-                <Skeleton className="h-10 w-80" />
-            </CardHeader>
-            <CardContent className="flex justify-center bg-muted/50 p-4">
-                <Skeleton className="h-[800px] w-[566px] bg-muted" />
-            </CardContent>
-        </Card>
-    </AppLayout>
-);
+function PdfViewerPageContent() {
+    const searchParams = useSearchParams();
+    const pdfUrl = searchParams.get('url');
+    const pdfTitle = searchParams.get('title') || 'PDF Document';
 
-// Dynamically import the viewer component with SSR turned off.
-// This prevents the react-pdf library from being loaded on the server.
-const PdfViewer = dynamic(() => import('@/components/pdf-viewer'), { 
-    ssr: false,
-    loading: () => <PdfViewerSkeleton />
-});
+    if (!pdfUrl) {
+        return (
+            <div className="flex items-center justify-center h-full">
+                <div className="text-center p-8 bg-card rounded-lg shadow-md max-w-md">
+                    <h2 className="text-2xl font-bold text-destructive">Error</h2>
+                    <p className="text-muted-foreground mt-2">No PDF URL was provided in the link.</p>
+                </div>
+            </div>
+        );
+    }
+  
+    return <PdfViewer url={pdfUrl} title={pdfTitle} />;
+}
+
+const PdfViewerSkeleton = () => {
+    return (
+        <div className="w-full h-[90vh] rounded-2xl overflow-hidden shadow-xl border border-gray-200 dark:border-gray-700">
+            <Skeleton className="h-[52px] w-full" />
+            <div className="w-full h-full bg-muted" />
+        </div>
+    );
+};
 
 export default function PdfViewerPage() {
-    // The Suspense boundary is required because the dynamically loaded
-    // component uses the useSearchParams() hook.
     return (
-        <Suspense fallback={<PdfViewerSkeleton />}>
-            <PdfViewer />
-        </Suspense>
+        <div className="bg-gray-50 dark:bg-gray-900 min-h-screen flex items-center justify-center p-4">
+            <Suspense fallback={<PdfViewerSkeleton />}>
+                <PdfViewerPageContent />
+            </Suspense>
+        </div>
     )
 }
