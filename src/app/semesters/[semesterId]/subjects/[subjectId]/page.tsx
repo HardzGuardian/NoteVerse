@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { initialSemesters, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
+import { Download, FolderOpen, MoreVertical, FileText, Eye } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type PDFTableProps = {
@@ -61,6 +61,11 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                        <Link href={`/view-pdf?url=${encodeURIComponent(pdf.url)}&title=${encodeURIComponent(pdf.title)}`}>
+                            <Eye className="mr-2 h-4 w-4" /> View
+                        </Link>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
                       <Download className="mr-2 h-4 w-4" /> Download
                     </DropdownMenuItem>

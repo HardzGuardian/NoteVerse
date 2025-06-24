@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { initialSemesters, PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit } from "lucide-react";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit, Eye } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -72,6 +72,11 @@ const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onUpload, type }: PDFT
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
+                  <DropdownMenuItem asChild>
+                      <Link href={`/view-pdf?url=${encodeURIComponent(pdf.url)}&title=${encodeURIComponent(pdf.title)}`} target="_blank">
+                          <Eye className="mr-2 h-4 w-4" /> View
+                      </Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
                     <Download className="mr-2 h-4 w-4" /> Download
                   </DropdownMenuItem>
@@ -213,7 +218,7 @@ export default function AdminPDFsPage() {
       id: `pdf${Date.now()}`,
       title: newFileData.title,
       category: newFileData.category,
-      url: "#", // In a real app, this would be the URL from blob storage
+      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // In a real app, this would be the URL from blob storage
       createdAt: new Date().toISOString().split('T')[0],
     };
 
