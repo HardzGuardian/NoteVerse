@@ -3,13 +3,12 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// This special import configures the PDF.js worker for Webpack-based bundlers like Next.js.
-// It removes the need for manual configuration and fetching from a URL.
-import 'react-pdf/dist/esm/webpack.js';
+// Configure the worker from a reliable CDN. This is the most stable method.
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 import { AppLayout } from '@/components/app-layout';
 import { Button } from '@/components/ui/button';
