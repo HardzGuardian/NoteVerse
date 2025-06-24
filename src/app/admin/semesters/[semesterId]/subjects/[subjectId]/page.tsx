@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { AdminLayout } from "@/components/admin-layout";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,14 +12,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Edit, Eye, Link2 } from "lucide-react";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Edit, Eye, Link2, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import PdfViewer from "@/components/pdf-viewer";
+
+const PdfViewer = dynamic(() => import("@/components/pdf-viewer"), { 
+    ssr: false,
+    loading: () => (
+        <div className="flex h-full w-full items-center justify-center bg-muted">
+            <Loader2 className="h-10 w-10 animate-spin" />
+        </div>
+    )
+});
 
 type PDFTableProps = {
   pdfs: PDF[];
@@ -403,11 +412,9 @@ export default function AdminPDFsPage() {
 
       <Dialog open={!!pdfToView} onOpenChange={(isOpen) => !isOpen && setPdfToView(null)}>
         <DialogContent className="max-w-4xl h-[90vh] p-0">
+          <DialogTitle className="sr-only">{pdfToView?.title}</DialogTitle>
           {pdfToView && (
-            <>
-              <DialogTitle className="sr-only">{pdfToView.title}</DialogTitle>
-              <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />
-            </>
+            <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />
           )}
         </DialogContent>
       </Dialog>

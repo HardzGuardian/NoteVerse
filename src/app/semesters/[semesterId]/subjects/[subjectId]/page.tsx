@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,10 +13,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Semester, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
+import { Download, FolderOpen, MoreVertical, FileText, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import PdfViewer from "@/components/pdf-viewer";
+
+const PdfViewer = dynamic(() => import("@/components/pdf-viewer"), { 
+    ssr: false,
+    loading: () => (
+        <div className="flex h-full w-full items-center justify-center bg-muted">
+            <Loader2 className="h-10 w-10 animate-spin" />
+        </div>
+    )
+});
+
 
 type PDFTableProps = {
   pdfs: PDF[];
@@ -165,11 +175,9 @@ export default function PDFsPage() {
 
       <Dialog open={!!pdfToView} onOpenChange={(isOpen) => !isOpen && setPdfToView(null)}>
         <DialogContent className="max-w-4xl h-[90vh] p-0">
+          <DialogTitle className="sr-only">{pdfToView?.title}</DialogTitle>
           {pdfToView && (
-            <>
-              <DialogTitle className="sr-only">{pdfToView.title}</DialogTitle>
-              <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />
-            </>
+            <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />
           )}
         </DialogContent>
       </Dialog>
