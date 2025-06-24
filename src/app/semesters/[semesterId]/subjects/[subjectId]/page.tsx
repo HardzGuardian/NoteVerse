@@ -10,14 +10,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { initialSemesters, PDF, Subject } from "@/lib/data";
+import { Semester, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type PDFTableProps = {
   pdfs: PDF[];
-  onDownload: (title: string) => void;
+  onDownload: (pdf: PDF) => void;
   type: 'Note' | 'Exam';
 };
 
@@ -68,7 +68,7 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
                         </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
+                        <DropdownMenuItem onClick={() => onDownload(pdf)}>
                           <Download className="mr-2 h-4 w-4" /> Download
                         </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -87,11 +87,13 @@ export default function PDFsPage() {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const [subject, setSubject] = useState<Subject | undefined>();
+  const [semesters, setSemesters] = useState<Semester[]>([]);
 
   useEffect(() => {
     setLoading(true);
     const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
+    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
+    setSemesters(allSemesters);
     const semester = allSemesters.find((s) => s.id === params.semesterId);
     const currentSubject = semester?.subjects.find((sub) => sub.id === params.subjectId);
     setSubject(currentSubject);
@@ -101,10 +103,16 @@ export default function PDFsPage() {
     return () => clearTimeout(timer);
   }, [params.semesterId, params.subjectId]);
   
-  const handleDownload = (title: string) => {
+  const handleDownload = (pdf: PDF) => {
+    const link = document.createElement("a");
+    link.href = pdf.url;
+    link.download = `${pdf.title}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     toast({
       title: "Downloading...",
-      description: `${title} has started downloading.`,
+      description: `${pdf.title} has started downloading.`,
     });
   };
 
@@ -159,3 +167,5 @@ export default function PDFsPage() {
     </AppLayout>
   );
 }
+
+    

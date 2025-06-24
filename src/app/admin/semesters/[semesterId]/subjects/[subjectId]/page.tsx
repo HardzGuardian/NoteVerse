@@ -22,7 +22,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type PDFTableProps = {
   pdfs: PDF[];
-  onDownload: (title: string) => void;
+  onDownload: (pdf: PDF) => void;
   onRename: (pdf: PDF) => void;
   onDelete: (pdf: PDF) => void;
   onUpload: () => void;
@@ -77,7 +77,7 @@ const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onUpload, type }: PDFT
                           <Eye className="mr-2 h-4 w-4" /> View
                       </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
+                  <DropdownMenuItem onClick={() => onDownload(pdf)}>
                     <Download className="mr-2 h-4 w-4" /> Download
                   </DropdownMenuItem>
                    <DropdownMenuItem onClick={() => onRename(pdf)}>
@@ -135,10 +135,16 @@ export default function AdminPDFsPage() {
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
   };
   
-  const handleDownload = (title: string) => {
+  const handleDownload = (pdf: PDF) => {
+    const link = document.createElement("a");
+    link.href = pdf.url;
+    link.download = `${pdf.title}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     toast({
       title: "Downloading...",
-      description: `${title} has started downloading.`,
+      description: `${pdf.title} has started downloading.`,
     });
   };
   
@@ -222,36 +228,46 @@ export default function AdminPDFsPage() {
     }
     if (!subject) return;
 
-    const newPdf: PDF = {
-      id: `pdf${Date.now()}`,
-      title: newFileData.title,
-      category: newFileData.category,
-      url: "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf", // In a real app, this would be the URL from blob storage
-      createdAt: new Date().toISOString().split('T')[0],
-    };
+    const reader = new FileReader();
+    reader.readAsDataURL(fileToUpload);
+    reader.onloadend = () => {
+        const fileAsDataUrl = reader.result as string;
 
-    const savedSemestersRaw = localStorage.getItem('semesters');
-    const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
-    const updatedSemesters = allSemesters.map(s => {
-        if (s.id === params.semesterId) {
-            const updatedSubjects = s.subjects.map(sub => {
-                if (sub.id === params.subjectId) {
-                    return { ...sub, pdfs: [...sub.pdfs, newPdf] };
-                }
-                return sub;
-            });
-            return { ...s, subjects: updatedSubjects };
-        }
-        return s;
-    });
-    
-    updateSemestersInStorage(updatedSemesters);
-    setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
-    setUpdateNote(`New ${newFileData.category} "${newFileData.title}" was uploaded to ${subject.name}.`);
-    toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
-    setIsUploadDialogOpen(false);
-    setNewFileData({ title: "", category: "Note" });
-    setFileToUpload(null);
+        const newPdf: PDF = {
+          id: `pdf${Date.now()}`,
+          title: newFileData.title,
+          category: newFileData.category,
+          url: fileAsDataUrl,
+          createdAt: new Date().toISOString().split('T')[0],
+        };
+
+        const savedSemestersRaw = localStorage.getItem('semesters');
+        const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
+        const updatedSemesters = allSemesters.map(s => {
+            if (s.id === params.semesterId) {
+                const updatedSubjects = s.subjects.map(sub => {
+                    if (sub.id === params.subjectId) {
+                        return { ...sub, pdfs: [...sub.pdfs, newPdf] };
+                    }
+                    return sub;
+                });
+                return { ...s, subjects: updatedSubjects };
+            }
+            return s;
+        });
+        
+        updateSemestersInStorage(updatedSemesters);
+        setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
+        setUpdateNote(`New ${newFileData.category} "${newFileData.title}" was uploaded to ${subject.name}.`);
+        toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
+        setIsUploadDialogOpen(false);
+        setNewFileData({ title: "", category: "Note" });
+        setFileToUpload(null);
+    };
+    reader.onerror = () => {
+        console.error("Error reading file");
+        toast({ variant: "destructive", title: "Error", description: "Could not read the selected file." });
+    };
   };
 
 
@@ -344,7 +360,7 @@ export default function AdminPDFsPage() {
             </div>
             <div className="space-y-2">
               <Label htmlFor="file-upload">File</Label>
-              <Input id="file-upload" type="file" onChange={handleFileChange} />
+              <Input id="file-upload" type="file" onChange={handleFileChange} accept="application/pdf" />
               {fileToUpload && (
                 <p className="text-sm text-muted-foreground">Selected: {fileToUpload.name}</p>
               )}
@@ -398,3 +414,5 @@ export default function AdminPDFsPage() {
     </AdminLayout>
   );
 }
+
+    

@@ -7,7 +7,7 @@ import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { initialSemesters, Semester } from "@/lib/data";
+import { Semester } from "@/lib/data";
 import { Book, RefreshCw } from "lucide-react";
 
 export default function SemestersPage() {
@@ -17,12 +17,20 @@ export default function SemestersPage() {
   const loadData = () => {
     setLoading(true);
     const savedSemesters = localStorage.getItem('semesters');
-    setSemesters(savedSemesters ? JSON.parse(savedSemesters) : initialSemesters);
+    setSemesters(savedSemesters ? JSON.parse(savedSemesters) : []);
     setTimeout(() => setLoading(false), 1000);
   }
 
   useEffect(() => {
     loadData();
+    
+    // Listen for changes from other tabs
+    window.addEventListener('storage', (e) => {
+        if(e.key === 'semesters') {
+            loadData();
+        }
+    });
+
   }, []);
 
   return (
@@ -70,3 +78,5 @@ export default function SemestersPage() {
     </AppLayout>
   );
 }
+
+    
