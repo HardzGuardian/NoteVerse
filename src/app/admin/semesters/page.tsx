@@ -36,7 +36,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { initialSemesters, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Book, RefreshCw, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Book, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function AdminSemestersPage() {
   const [loading, setLoading] = useState(true);
@@ -59,13 +59,6 @@ export default function AdminSemestersPage() {
     }, 1000);
     return () => clearTimeout(timer);
   }, []);
-
-  const refreshData = () => {
-    setLoading(true);
-    localStorage.setItem('semesters', JSON.stringify(initialSemesters));
-    setSemesters(initialSemesters);
-    setTimeout(() => setLoading(false), 1000);
-  };
 
   const handleAddSemester = () => {
     if (!newSemesterName.trim()) {
@@ -120,7 +113,6 @@ export default function AdminSemestersPage() {
           <p className="text-muted-foreground">Add, rename, or delete semesters.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={refreshData}><RefreshCw className="mr-2 h-4 w-4"/> Reset to Default</Button>
           <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddDialogOpen(true)}>
             <PlusCircle className="mr-2 h-4 w-4" /> Add Semester
           </Button>
