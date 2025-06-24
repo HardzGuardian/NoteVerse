@@ -12,13 +12,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit, Eye } from "lucide-react";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit, Eye, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { storage } from "@/lib/firebase";
+import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 type PDFTableProps = {
   pdfs: PDF[];
@@ -107,6 +109,7 @@ export default function AdminPDFsPage() {
   
   const [subject, setSubject] = useState<Subject | undefined>();
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [newFileData, setNewFileData] = useState({ title: "", category: "Note" as "Note" | "Exam" });
   const [fileToUpload, setFileToUpload] = useState<File | null>(null);
   
@@ -187,8 +190,24 @@ export default function AdminPDFsPage() {
     setPdfToEdit(null);
   };
   
-  const handleDeletePdf = () => {
+  const handleDeletePdf = async () => {
     if (!pdfToDelete || !subject) return;
+
+    try {
+        if (pdfToDelete.url.includes('firebasestorage.googleapis.com')) {
+            const fileRef = ref(storage, pdfToDelete.url);
+            await deleteObject(fileRef);
+        }
+    } catch (error: any) {
+        console.error("Failed to delete file from Firebase Storage:", error);
+        if (error.code !== 'storage/object-not-found') {
+             toast({
+                variant: "destructive",
+                title: "Storage Deletion Failed",
+                description: "Could not remove the file from cloud storage, but the record was deleted.",
+            });
+        }
+    }
 
     const savedSemestersRaw = localStorage.getItem('semesters');
     const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
@@ -221,53 +240,59 @@ export default function AdminPDFsPage() {
     }
   };
 
-  const handleUploadFile = () => {
+  const handleUploadFile = async () => {
     if (!newFileData.title.trim() || !fileToUpload) {
       toast({ variant: "destructive", title: "Error", description: "Please provide a title and select a file." });
       return;
     }
     if (!subject) return;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(fileToUpload);
-    reader.onloadend = () => {
-        const fileAsDataUrl = reader.result as string;
+    setIsUploading(true);
 
-        const newPdf: PDF = {
-          id: `pdf${Date.now()}`,
-          title: newFileData.title,
-          category: newFileData.category,
-          url: fileAsDataUrl,
-          createdAt: new Date().toISOString().split('T')[0],
-        };
+    try {
+      const uniqueFileName = `${Date.now()}-${fileToUpload.name.replace(/\s/g, '_')}`;
+      const storageRef = ref(storage, `pdfs/${subject.id}/${uniqueFileName}`);
+      
+      await uploadBytes(storageRef, fileToUpload);
+      const downloadURL = await getDownloadURL(storageRef);
 
-        const savedSemestersRaw = localStorage.getItem('semesters');
-        const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
-        const updatedSemesters = allSemesters.map(s => {
-            if (s.id === params.semesterId) {
-                const updatedSubjects = s.subjects.map(sub => {
-                    if (sub.id === params.subjectId) {
-                        return { ...sub, pdfs: [...sub.pdfs, newPdf] };
-                    }
-                    return sub;
-                });
-                return { ...s, subjects: updatedSubjects };
-            }
-            return s;
-        });
-        
-        updateSemestersInStorage(updatedSemesters);
-        setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
-        setUpdateNote(`New ${newFileData.category} "${newFileData.title}" was uploaded to ${subject.name}.`);
-        toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
-        setIsUploadDialogOpen(false);
-        setNewFileData({ title: "", category: "Note" });
-        setFileToUpload(null);
-    };
-    reader.onerror = () => {
-        console.error("Error reading file");
-        toast({ variant: "destructive", title: "Error", description: "Could not read the selected file." });
-    };
+      const newPdf: PDF = {
+        id: `pdf${Date.now()}`,
+        title: newFileData.title,
+        category: newFileData.category,
+        url: downloadURL,
+        createdAt: new Date().toISOString().split('T')[0],
+      };
+
+      const savedSemestersRaw = localStorage.getItem('semesters');
+      const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
+      const updatedSemesters = allSemesters.map(s => {
+          if (s.id === params.semesterId) {
+              const updatedSubjects = s.subjects.map(sub => {
+                  if (sub.id === params.subjectId) {
+                      return { ...sub, pdfs: [...sub.pdfs, newPdf] };
+                  }
+                  return sub;
+              });
+              return { ...s, subjects: updatedSubjects };
+          }
+          return s;
+      });
+      
+      updateSemestersInStorage(updatedSemesters);
+      setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
+      setUpdateNote(`New ${newFileData.category} "${newFileData.title}" was uploaded to ${subject.name}.`);
+      toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
+
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload file to storage. See console for details." });
+    } finally {
+      setIsUploading(false);
+      setIsUploadDialogOpen(false);
+      setNewFileData({ title: "", category: "Note" });
+      setFileToUpload(null);
+    }
   };
 
 
@@ -323,7 +348,7 @@ export default function AdminPDFsPage() {
       </Card>
       
       {/* Upload File Dialog */}
-      <Dialog open={isUploadDialogOpen} onOpenChange={setIsUploadDialogOpen}>
+      <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => !isUploading && setIsUploadDialogOpen(isOpen)}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Upload a New File</DialogTitle>
@@ -367,8 +392,11 @@ export default function AdminPDFsPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleUploadFile}><Upload className="mr-2 h-4 w-4"/> Upload</Button>
+            <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)} disabled={isUploading}>Cancel</Button>
+            <Button onClick={handleUploadFile} disabled={isUploading}>
+                {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4"/>}
+                {isUploading ? "Uploading..." : "Upload"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -402,7 +430,7 @@ export default function AdminPDFsPage() {
               <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the file "{pdfToDelete?.title}".
+                      This action cannot be undone. This will permanently delete the file "{pdfToDelete?.title}" from storage.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -414,3 +442,5 @@ export default function AdminPDFsPage() {
     </AdminLayout>
   );
 }
+
+    
