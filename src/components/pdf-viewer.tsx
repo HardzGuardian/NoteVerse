@@ -11,10 +11,11 @@ import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { DialogClose } from './ui/dialog';
 
-// Use a specific, stable version of pdfjs to avoid breaking changes.
-// This version should match the one in package.json
-const pdfjsVersion = '4.2.67';
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.mjs`;
+// This is the new, correct way. It ensures the worker version always matches the library version.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url,
+).toString();
 
 interface PdfViewerProps {
   fileId: string;
@@ -96,7 +97,7 @@ export default function PdfViewer({ fileId, title }: PdfViewerProps) {
                          <AlertTriangle className="h-4 w-4" />
                          <AlertTitle>Error Loading Document</AlertTitle>
                          <AlertDescription>
-                            We couldn't load the PDF. This can happen if the file is private or the link is incorrect. Please ensure the Google Drive file is shared publicly ("Anyone with the link").
+                            We couldn't load the PDF. This can happen if the file is private or the link is incorrect. Please ensure the Google Drive file is shared with "Anyone with the link".
                          </AlertDescription>
                      </Alert>
                  </div>
