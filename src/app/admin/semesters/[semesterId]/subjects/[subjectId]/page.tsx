@@ -12,26 +12,24 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PDF, Subject, Semester } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Upload, Edit, Eye, Loader2 } from "lucide-react";
+import { PlusCircle, Download, Trash2, FolderOpen, MoreVertical, FileText, Edit, Eye, Link2, Loader2 } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { storage } from "@/lib/firebase";
-import { ref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 
 type PDFTableProps = {
   pdfs: PDF[];
   onDownload: (pdf: PDF) => void;
   onRename: (pdf: PDF) => void;
   onDelete: (pdf: PDF) => void;
-  onUpload: () => void;
+  onAdd: () => void;
   type: 'Note' | 'Exam';
 };
 
-const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onUpload, type }: PDFTableProps) => {
+const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onAdd, type }: PDFTableProps) => {
   if (pdfs.length === 0) {
     return (
       <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -39,9 +37,9 @@ const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onUpload, type }: PDFT
           <FolderOpen className="h-12 w-12 text-muted-foreground" />
         </div>
         <h3 className="mt-4 text-lg font-semibold">No {type}s Available</h3>
-        <p className="text-muted-foreground">Upload the first {type.toLowerCase()} for this subject.</p>
-        <Button className="mt-4 bg-accent hover:bg-accent/90" onClick={onUpload}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Upload First {type}
+        <p className="text-muted-foreground">Add the first {type.toLowerCase()} for this subject.</p>
+        <Button className="mt-4 bg-accent hover:bg-accent/90" onClick={onAdd}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add First {type}
         </Button>
       </CardContent>
     );
@@ -75,7 +73,7 @@ const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onUpload, type }: PDFT
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                      <Link href={`/view-pdf?url=${encodeURIComponent(pdf.url)}&title=${encodeURIComponent(pdf.title)}`} target="_blank">
+                      <Link href={`/view-pdf?fileId=${pdf.fileId}&title=${encodeURIComponent(pdf.title)}`} target="_blank">
                           <Eye className="mr-2 h-4 w-4" /> View
                       </Link>
                   </DropdownMenuItem>
@@ -108,10 +106,8 @@ export default function AdminPDFsPage() {
   const { toast } = useToast();
   
   const [subject, setSubject] = useState<Subject | undefined>();
-  const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
-  const [newFileData, setNewFileData] = useState({ title: "", category: "Note" as "Note" | "Exam" });
-  const [fileToUpload, setFileToUpload] = useState<File | null>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newPdfData, setNewPdfData] = useState({ title: "", fileId: "", category: "Note" as "Note" | "Exam" });
   
   const [pdfToEdit, setPdfToEdit] = useState<PDF | null>(null);
   const [editedPdfTitle, setEditedPdfTitle] = useState("");
@@ -139,12 +135,8 @@ export default function AdminPDFsPage() {
   };
   
   const handleDownload = (pdf: PDF) => {
-    const link = document.createElement("a");
-    link.href = pdf.url;
-    link.download = `${pdf.title}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const downloadUrl = `https://drive.google.com/uc?export=download&id=${pdf.fileId}`;
+    window.open(downloadUrl, '_blank');
     toast({
       title: "Downloading...",
       description: `${pdf.title} has started downloading.`,
@@ -193,22 +185,6 @@ export default function AdminPDFsPage() {
   const handleDeletePdf = async () => {
     if (!pdfToDelete || !subject) return;
 
-    try {
-        if (pdfToDelete.url.includes('firebasestorage.googleapis.com')) {
-            const fileRef = ref(storage, pdfToDelete.url);
-            await deleteObject(fileRef);
-        }
-    } catch (error: any) {
-        console.error("Failed to delete file from Firebase Storage:", error);
-        if (error.code !== 'storage/object-not-found') {
-             toast({
-                variant: "destructive",
-                title: "Storage Deletion Failed",
-                description: "Could not remove the file from cloud storage, but the record was deleted.",
-            });
-        }
-    }
-
     const savedSemestersRaw = localStorage.getItem('semesters');
     const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : [];
     const updatedSemesters = allSemesters.map(s => {
@@ -234,33 +210,18 @@ export default function AdminPDFsPage() {
     setPdfToDelete(null);
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFileToUpload(e.target.files[0]);
-    }
-  };
-
-  const handleUploadFile = async () => {
-    if (!newFileData.title.trim() || !fileToUpload) {
-      toast({ variant: "destructive", title: "Error", description: "Please provide a title and select a file." });
+  const handleAddPdf = async () => {
+    if (!newPdfData.title.trim() || !newPdfData.fileId.trim()) {
+      toast({ variant: "destructive", title: "Error", description: "Please provide a title and a Google Drive File ID." });
       return;
     }
     if (!subject) return;
 
-    setIsUploading(true);
-
-    try {
-      const uniqueFileName = `${Date.now()}-${fileToUpload.name.replace(/\s/g, '_')}`;
-      const storageRef = ref(storage, `pdfs/${subject.id}/${uniqueFileName}`);
-      
-      await uploadBytes(storageRef, fileToUpload);
-      const downloadURL = await getDownloadURL(storageRef);
-
       const newPdf: PDF = {
         id: `pdf${Date.now()}`,
-        title: newFileData.title,
-        category: newFileData.category,
-        url: downloadURL,
+        title: newPdfData.title,
+        fileId: newPdfData.fileId,
+        category: newPdfData.category,
         createdAt: new Date().toISOString().split('T')[0],
       };
 
@@ -281,18 +242,11 @@ export default function AdminPDFsPage() {
       
       updateSemestersInStorage(updatedSemesters);
       setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
-      setUpdateNote(`New ${newFileData.category} "${newFileData.title}" was uploaded to ${subject.name}.`);
-      toast({ title: "Success", description: `File "${newFileData.title}" uploaded.` });
+      setUpdateNote(`New ${newPdfData.category} "${newPdfData.title}" was added to ${subject.name}.`);
+      toast({ title: "Success", description: `PDF "${newPdfData.title}" added.` });
 
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      toast({ variant: "destructive", title: "Upload Failed", description: "Could not upload file to storage. See console for details." });
-    } finally {
-      setIsUploading(false);
-      setIsUploadDialogOpen(false);
-      setNewFileData({ title: "", category: "Note" });
-      setFileToUpload(null);
-    }
+      setIsAddDialogOpen(false);
+      setNewPdfData({ title: "", fileId: "", category: "Note" });
   };
 
 
@@ -317,10 +271,10 @@ export default function AdminPDFsPage() {
        <div className="flex justify-between items-center mb-6">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Manage Subject Files</h2>
-          <p className="text-muted-foreground">Upload, rename, or delete notes and exam papers.</p>
+          <p className="text-muted-foreground">Add, rename, or delete notes and exam papers from Google Drive.</p>
         </div>
-        <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsUploadDialogOpen(true)}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Upload File
+        <Button className="bg-accent hover:bg-accent/90" onClick={() => setIsAddDialogOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" /> Add PDF
         </Button>
       </div>
 
@@ -338,39 +292,48 @@ export default function AdminPDFsPage() {
               <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="notes">
-              <PDFTable pdfs={notes} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Note" onUpload={() => setIsUploadDialogOpen(true)} />
+              <PDFTable pdfs={notes} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Note" onAdd={() => setIsAddDialogOpen(true)} />
             </TabsContent>
             <TabsContent value="exams">
-              <PDFTable pdfs={exams} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Exam" onUpload={() => setIsUploadDialogOpen(true)} />
+              <PDFTable pdfs={exams} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Exam" onAdd={() => setIsAddDialogOpen(true)} />
             </TabsContent>
           </Tabs>
         )}
       </Card>
       
-      {/* Upload File Dialog */}
-      <Dialog open={isUploadDialogOpen} onOpenChange={(isOpen) => !isUploading && setIsUploadDialogOpen(isOpen)}>
+      {/* Add PDF Dialog */}
+      <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Upload a New File</DialogTitle>
+            <DialogTitle>Add PDF from Google Drive</DialogTitle>
             <DialogDescription>
-              Choose a file, give it a title, and assign it to a category.
+              Enter the PDF title and its Google Drive File ID. Ensure the file is publicly accessible.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="file-title">File Title</Label>
+              <Label htmlFor="pdf-title">PDF Title</Label>
               <Input
-                id="file-title"
+                id="pdf-title"
                 placeholder="e.g., Chapter 5 Summary"
-                value={newFileData.title}
-                onChange={(e) => setNewFileData({ ...newFileData, title: e.target.value })}
+                value={newPdfData.title}
+                onChange={(e) => setNewPdfData({ ...newPdfData, title: e.target.value })}
+              />
+            </div>
+             <div className="space-y-2">
+              <Label htmlFor="file-id">Google Drive File ID</Label>
+              <Input
+                id="file-id"
+                placeholder="e.g., 1-AbCDeFgHiJkLmNoPqRsTuVwXyZ"
+                value={newPdfData.fileId}
+                onChange={(e) => setNewPdfData({ ...newPdfData, fileId: e.target.value })}
               />
             </div>
             <div className="space-y-2">
               <Label>Category</Label>
               <RadioGroup
-                value={newFileData.category}
-                onValueChange={(value: "Note" | "Exam") => setNewFileData({ ...newFileData, category: value })}
+                value={newPdfData.category}
+                onValueChange={(value: "Note" | "Exam") => setNewPdfData({ ...newPdfData, category: value })}
                 className="flex gap-4"
               >
                 <div className="flex items-center space-x-2">
@@ -383,19 +346,12 @@ export default function AdminPDFsPage() {
                 </div>
               </RadioGroup>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="file-upload">File</Label>
-              <Input id="file-upload" type="file" onChange={handleFileChange} accept="application/pdf" />
-              {fileToUpload && (
-                <p className="text-sm text-muted-foreground">Selected: {fileToUpload.name}</p>
-              )}
-            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsUploadDialogOpen(false)} disabled={isUploading}>Cancel</Button>
-            <Button onClick={handleUploadFile} disabled={isUploading}>
-                {isUploading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Upload className="mr-2 h-4 w-4"/>}
-                {isUploading ? "Uploading..." : "Upload"}
+            <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleAddPdf}>
+                <Link2 className="mr-2 h-4 w-4"/>
+                Add PDF
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -430,7 +386,7 @@ export default function AdminPDFsPage() {
               <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                      This action cannot be undone. This will permanently delete the file "{pdfToDelete?.title}" from storage.
+                      This action cannot be undone. This will permanently delete the reference to the file "{pdfToDelete?.title}". It will not delete the file from your Google Drive.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -442,5 +398,3 @@ export default function AdminPDFsPage() {
     </AdminLayout>
   );
 }
-
-    

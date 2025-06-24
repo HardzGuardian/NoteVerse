@@ -2,7 +2,7 @@
 export type PDF = {
   id: string;
   title: string;
-  url: string;
+  fileId: string;
   createdAt: string;
   category: 'Note' | 'Exam';
 };
@@ -37,8 +37,6 @@ export type SocialLink = {
   enabled: boolean;
   placeholder: string;
 };
-
-const DUMMY_PDF_URL = "https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf";
 
 export const users: User[] = [
   { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online', displayNameHidden: false, canChangeName: true },

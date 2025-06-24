@@ -50,7 +50,7 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
             <TableRow 
                 key={pdf.id}
                 className="cursor-pointer"
-                onClick={() => router.push(`/view-pdf?url=${encodeURIComponent(pdf.url)}&title=${encodeURIComponent(pdf.title)}`)}
+                onClick={() => router.push(`/view-pdf?fileId=${pdf.fileId}&title=${encodeURIComponent(pdf.title)}`)}
             >
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
@@ -104,12 +104,8 @@ export default function PDFsPage() {
   }, [params.semesterId, params.subjectId]);
   
   const handleDownload = (pdf: PDF) => {
-    const link = document.createElement("a");
-    link.href = pdf.url;
-    link.download = `${pdf.title}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const downloadUrl = `https://drive.google.com/uc?export=download&id=${pdf.fileId}`;
+    window.open(downloadUrl, '_blank');
     toast({
       title: "Downloading...",
       description: `${pdf.title} has started downloading.`,
