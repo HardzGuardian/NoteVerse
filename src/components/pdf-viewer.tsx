@@ -3,9 +3,14 @@
 
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// This special import configures the PDF.js worker for Webpack-based bundlers like Next.js.
+// It removes the need for manual configuration and fetching from a URL.
+import 'react-pdf/dist/esm/webpack.js';
+
 import { AppLayout } from '@/components/app-layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,12 +18,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Configure the PDF.js worker to be loaded from the local build using import.meta.url.
-// This is the most reliable method for Next.js and other modern bundlers.
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
 
 export default function PdfViewer() {
   const searchParams = useSearchParams();
