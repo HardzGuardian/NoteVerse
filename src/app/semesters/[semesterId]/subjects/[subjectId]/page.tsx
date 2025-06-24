@@ -14,7 +14,7 @@ import { Semester, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
 import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import PdfViewer from "@/components/pdf-viewer";
 
 type PDFTableProps = {
@@ -165,7 +165,12 @@ export default function PDFsPage() {
 
       <Dialog open={!!pdfToView} onOpenChange={(isOpen) => !isOpen && setPdfToView(null)}>
         <DialogContent className="max-w-4xl h-[90vh] p-0">
-          {pdfToView && <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />}
+          {pdfToView && (
+            <>
+              <DialogTitle className="sr-only">{pdfToView.title}</DialogTitle>
+              <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </AppLayout>

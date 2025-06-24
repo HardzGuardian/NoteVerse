@@ -68,7 +68,7 @@ const PDFTable = ({ pdfs, onDownload, onRename, onDelete, onAdd, type, onView }:
             <TableCell className="text-right">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
                     <MoreVertical className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -261,7 +261,7 @@ export default function AdminPDFsPage() {
         <div className="text-center">
           <h2 className="text-2xl font-bold">Subject not found</h2>
           <Button asChild className="mt-4">
-            <Link href={`/admin/semesters/${params.semesterId}`}>Go Back</Link>
+            <a href={`/admin/semesters/${params.semesterId}`}>Go Back</a>
           </Button>
         </div>
       </AdminLayout>
@@ -403,7 +403,12 @@ export default function AdminPDFsPage() {
 
       <Dialog open={!!pdfToView} onOpenChange={(isOpen) => !isOpen && setPdfToView(null)}>
         <DialogContent className="max-w-4xl h-[90vh] p-0">
-          {pdfToView && <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />}
+          {pdfToView && (
+            <>
+              <DialogTitle className="sr-only">{pdfToView.title}</DialogTitle>
+              <PdfViewer fileId={pdfToView.fileId} title={pdfToView.title} />
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </AdminLayout>
