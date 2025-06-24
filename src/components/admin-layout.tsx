@@ -121,6 +121,14 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
+              <SidebarMenuButton asChild isActive={pathname === "/admin/users/add"}>
+                <Link href="/admin/users/add">
+                  <User />
+                  Add User
+                </Link>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+            <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/update-note")}>
                 <Link href="/admin/update-note">
                   <Megaphone />

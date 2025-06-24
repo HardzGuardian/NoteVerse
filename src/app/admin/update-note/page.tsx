@@ -19,7 +19,7 @@ export default function UpdateNotePage() {
 
   useEffect(() => {
     const savedNote = localStorage.getItem('update-note-text');
-    setNote(savedNote || updateNote.text);
+    setNote(savedNote || NoteVerse.text);
     setIsMounted(true);
   }, []);
 
