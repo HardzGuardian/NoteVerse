@@ -321,7 +321,7 @@ export default function AdminPDFsPage() {
           <DialogHeader>
             <DialogTitle>Add PDF from Google Drive</DialogTitle>
             <DialogDescription>
-              Enter the PDF title and its Google Drive File ID. Ensure the file is publicly accessible.
+              Enter the PDF title and its Google Drive File ID. Ensure the file's sharing setting is "Anyone with the link".
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
