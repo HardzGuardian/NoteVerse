@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { AppLayout } from "@/components/app-layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { initialSemesters, PDF, Subject } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { Download, FolderOpen, MoreVertical, FileText, Eye } from "lucide-react";
+import { Download, FolderOpen, MoreVertical, FileText } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 type PDFTableProps = {
@@ -22,6 +22,8 @@ type PDFTableProps = {
 };
 
 const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
+  const router = useRouter();
+
   if (pdfs.length === 0) {
     return (
       <CardContent className="flex flex-col items-center justify-center py-20 text-center">
@@ -45,7 +47,11 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
         </TableHeader>
         <TableBody>
           {pdfs.map((pdf) => (
-            <TableRow key={pdf.id}>
+            <TableRow 
+                key={pdf.id}
+                className="cursor-pointer"
+                onClick={() => router.push(`/view-pdf?url=${encodeURIComponent(pdf.url)}&title=${encodeURIComponent(pdf.title)}`)}
+            >
               <TableCell className="font-medium">
                 <div className="flex items-center gap-2">
                     <FileText className="h-5 w-5 text-muted-foreground"/>
@@ -54,23 +60,20 @@ const PDFTable = ({ pdfs, onDownload, type }: PDFTableProps) => {
               </TableCell>
               <TableCell className="hidden md:table-cell text-muted-foreground">{pdf.createdAt}</TableCell>
               <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem asChild>
-                        <Link href={`/view-pdf?url=${encodeURIComponent(pdf.url)}&title=${encodeURIComponent(pdf.title)}`}>
-                            <Eye className="mr-2 h-4 w-4" /> View
-                        </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
-                      <Download className="mr-2 h-4 w-4" /> Download
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <div onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                        <MoreVertical className="h-4 w-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => onDownload(pdf.title)}>
+                          <Download className="mr-2 h-4 w-4" /> Download
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
               </TableCell>
             </TableRow>
           ))}
