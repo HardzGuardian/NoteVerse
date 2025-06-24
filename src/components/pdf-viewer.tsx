@@ -13,10 +13,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-// Configure the PDF.js worker.
-// Using a CDN that matches the exact version of pdfjs-dist in package.json
-// is the most reliable way to avoid version mismatches and fetch errors.
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.11.174/build/pdf.worker.min.js`;
+// Configure the PDF.js worker using a reliable CDN.
+// This dynamically creates the worker URL based on the installed version of pdfjs-dist.
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 export default function PdfViewer() {
   const searchParams = useSearchParams();
