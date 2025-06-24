@@ -11,11 +11,8 @@ import { Button } from './ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { DialogClose } from './ui/dialog';
 
-// This is the new, correct way. It ensures the worker version always matches the library version.
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+// This is the most robust way for Next.js. It ensures the worker version always matches the library version.
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 
 interface PdfViewerProps {
   fileId: string;
