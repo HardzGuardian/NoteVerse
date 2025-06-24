@@ -79,7 +79,7 @@ export default function AdminSemestersPage() {
     const updatedSemesters = [...semesters, newSemester];
     setSemesters(updatedSemesters);
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
-    setUpdateNote(`New semester "${newSemesterName}" has been added.`);
+    setUpdateNote(`Great news! 🎉 A new semester, "${newSemesterName}", is now available for you to explore.`);
     toast({ title: "Success", description: "New semester added." });
     setNewSemesterName("");
     setIsAddDialogOpen(false);
@@ -98,7 +98,7 @@ export default function AdminSemestersPage() {
     const updatedSemesters = semesters.map(s => (s.id === semesterToEdit.id ? { ...s, name: editedSemesterName } : s));
     setSemesters(updatedSemesters);
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
-    setUpdateNote(`Semester "${semesterToEdit.name}" has been renamed to "${editedSemesterName}".`);
+    setUpdateNote(`Just a heads-up! 📢 The semester "${semesterToEdit.name}" has been renamed to "${editedSemesterName}".`);
     toast({ title: "Success", description: `Semester renamed to "${editedSemesterName}".` });
     setSemesterToEdit(null);
     setEditedSemesterName("");
@@ -109,7 +109,7 @@ export default function AdminSemestersPage() {
     const updatedSemesters = semesters.filter(s => s.id !== semesterToDelete.id);
     setSemesters(updatedSemesters);
     localStorage.setItem('semesters', JSON.stringify(updatedSemesters));
-    setUpdateNote(`Semester "${semesterToDelete.name}" has been deleted.`);
+    setUpdateNote(`FYI, the semester "${semesterToDelete.name}" has been archived and is no longer available. 📚`);
     toast({ variant: "destructive", title: "Deleted", description: `Semester "${semesterToDelete.name}" has been deleted.` });
     setSemesterToDelete(null);
   };

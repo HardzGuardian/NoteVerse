@@ -73,7 +73,7 @@ export default function AdminSubjectsPage() {
 
     updateSemestersInStorage(updatedSemesters);
     setSemester(prev => prev ? { ...prev, subjects: [...prev.subjects, newSubject] } : undefined);
-    setUpdateNote(`New subject "${newSubjectName}" was added to ${semester.name}.`);
+    setUpdateNote(`Exciting update! ✨ We've added a new subject, "${newSubjectName}", to the ${semester.name} semester.`);
     toast({ title: "Success", description: "New subject added." });
     setNewSubjectName("");
     setIsAddDialogOpen(false);
@@ -107,7 +107,7 @@ export default function AdminSubjectsPage() {
       ...prev,
       subjects: prev.subjects.map(s => (s.id === subjectToEdit.id ? { ...s, name: editedSubjectName } : s))
     } : undefined);
-    setUpdateNote(`Subject "${subjectToEdit.name}" was renamed to "${editedSubjectName}" in ${semester.name}.`);
+    setUpdateNote(`Quick update: The subject "${subjectToEdit.name}" is now called "${editedSubjectName}" in the ${semester.name} semester. ✍️`);
     toast({ title: "Success", description: `Subject renamed to "${editedSubjectName}".` });
     setSubjectToEdit(null);
   };
@@ -129,7 +129,7 @@ export default function AdminSubjectsPage() {
         ...prev,
         subjects: prev.subjects.filter(s => s.id !== subjectToDelete.id)
     } : undefined);
-    setUpdateNote(`Subject "${subjectToDelete.name}" was deleted from ${semester.name}.`);
+    setUpdateNote(`Just letting you know, the subject "${subjectToDelete.name}" has been removed from the ${semester.name} semester. 🗑️`);
     toast({ variant: "destructive", title: "Deleted", description: `Subject "${subjectToDelete.name}" has been deleted.` });
     setSubjectToDelete(null);
   };

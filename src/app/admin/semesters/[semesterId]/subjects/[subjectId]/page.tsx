@@ -177,7 +177,7 @@ export default function AdminPDFsPage() {
       ...prev,
       pdfs: prev.pdfs.map(p => p.id === pdfToEdit.id ? { ...p, title: editedPdfTitle } : p)
     } : undefined);
-    setUpdateNote(`File "${pdfToEdit.title}" was renamed to "${editedPdfTitle}" in ${subject.name}.`);
+    setUpdateNote(`A file has been updated! The document formerly known as "${pdfToEdit.title}" is now named "${editedPdfTitle}" in the ${subject.name} subject. 🔄`);
     toast({ title: "Success", description: `File renamed to "${editedPdfTitle}".` });
     setPdfToEdit(null);
   };
@@ -205,7 +205,7 @@ export default function AdminPDFsPage() {
       ...prev,
       pdfs: prev.pdfs.filter(p => p.id !== pdfToDelete.id)
     } : undefined);
-    setUpdateNote(`File "${pdfToDelete.title}" was deleted from ${subject.name}.`);
+    setUpdateNote(`Heads up! The file "${pdfToDelete.title}" has been removed from the ${subject.name} subject. 🧹`);
     toast({ variant: "destructive", title: "Deleted", description: `File "${pdfToDelete.title}" has been deleted.` });
     setPdfToDelete(null);
   };
@@ -242,7 +242,12 @@ export default function AdminPDFsPage() {
       
       updateSemestersInStorage(updatedSemesters);
       setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
-      setUpdateNote(`New ${newPdfData.category} "${newPdfData.title}" was added to ${subject.name}.`);
+      
+      const updateMessage = newPdfData.category === 'Note'
+        ? `New study material available! 📄 Check out the notes for "${newPdfData.title}" in the ${subject.name} subject.`
+        : `Get ready to practice! 📝 A new exam paper for "${newPdfData.title}" has been uploaded under ${subject.name}.`;
+      setUpdateNote(updateMessage);
+
       toast({ title: "Success", description: `PDF "${newPdfData.title}" added.` });
 
       setIsAddDialogOpen(false);
