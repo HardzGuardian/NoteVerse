@@ -7,12 +7,11 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 
-// The new, recommended way to set up the worker for Next.js App Router.
-// This uses Webpack's ability to resolve and bundle the worker script.
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+// To ensure compatibility with Vercel and other environments, we explicitly set the worker source
+// to a reliable CDN. This avoids build-time and runtime fetching issues.
+// The version is pinned to match the installed version of `react-pdf`.
+const pdfjsVersion = pdfjs.version;
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@${pdfjsVersion}/build/pdf.worker.min.js`;
 
 import { AppLayout } from '@/components/app-layout';
 import { Button } from '@/components/ui/button';
@@ -21,16 +20,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
-const ErrorFallback = ({ error }: { error: Error }) => (
+const ErrorFallback = ({ error, url }: { error: Error; url: string | null }) => (
   <div className="flex flex-col items-center justify-center text-center p-8 bg-destructive/10 text-destructive rounded-lg">
     <AlertCircle className="h-12 w-12 mb-4" />
     <h3 className="text-xl font-semibold mb-2">Failed to load PDF</h3>
-    <p className="text-sm">The document could not be loaded. Please check the link or try again later.</p>
-    <pre className="mt-4 text-xs text-left bg-destructive/20 p-2 rounded w-full max-w-md overflow-x-auto">
-      <code>Error: {error.message}</code>
-    </pre>
+    <p className="text-sm">The document could not be loaded from the provided URL.</p>
+    <div className="mt-4 text-xs text-left bg-destructive/20 p-3 rounded w-full max-w-lg overflow-x-auto space-y-2">
+      <p>
+        <strong>Error:</strong> {error.message}
+      </p>
+      <p>
+        <strong>URL:</strong> <a href={url || '#'} target="_blank" rel="noopener noreferrer" className="underline break-all">{url || 'N/A'}</a>
+      </p>
+      <p className="pt-2">
+        <strong>Troubleshooting:</strong><br/>
+        1. Check if the URL is correct and the PDF exists.<br/>
+        2. If using a service like Firebase Storage, ensure its CORS policy allows access from this website.
+      </p>
+    </div>
   </div>
 );
+
 
 export default function PdfViewer() {
   const searchParams = useSearchParams();
@@ -123,7 +133,7 @@ export default function PdfViewer() {
                       <Page pageNumber={pageNumber} scale={scale} renderTextLayer={true} />
                   </Document>
                 ) : (
-                  <ErrorFallback error={loadError} />
+                  <ErrorFallback error={loadError} url={pdfUrl} />
                 )}
               </div>
           </CardContent>
