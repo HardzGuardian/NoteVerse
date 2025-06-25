@@ -83,7 +83,7 @@ function AdminLoginForm() {
                   />
                 </div>
                 <div className="flex flex-col gap-3 pt-2">
-                  <Button onClick={handleLogin} className="w-full bg-purple-500 hover:bg-purple-700 text-white font-bold">
+                  <Button onClick={handleLogin} className="w-full bg-accent hover:bg-accent/90">
                     Login
                   </Button>
                 </div>
