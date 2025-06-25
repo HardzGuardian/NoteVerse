@@ -23,8 +23,7 @@ export default function SettingsPage() {
   const { toast } = useToast();
   const [mounted, setMounted] = useState(false);
   const [font, setFont] = useState('font-body');
-  const [hideMyName, setHideMyName] = useState(true);
-  const [hideMyPhoto, setHideMyPhoto] = useState(true);
+  const [hideProfile, setHideProfile] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
@@ -37,8 +36,7 @@ export default function SettingsPage() {
         const allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
         const currentUser = allUsers.find(u => u.id === loggedInUserId);
         if (currentUser) {
-            setHideMyName(currentUser.displayNameHidden);
-            setHideMyPhoto(currentUser.displayPhotoHidden ?? true);
+            setHideProfile(currentUser.displayNameHidden);
         }
     }
 
@@ -63,36 +61,18 @@ export default function SettingsPage() {
         const storedUsersRaw = localStorage.getItem('all-users');
         let allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
         allUsers = allUsers.map(user => 
-            user.id === loggedInUserId ? { ...user, displayNameHidden: hideMyName } : user
+            user.id === loggedInUserId ? { ...user, displayNameHidden: hideProfile, displayPhotoHidden: hideProfile } : user
         );
         localStorage.setItem('all-users', JSON.stringify(allUsers));
       }
 
       toast({
           title: "Privacy Setting Updated",
-          description: `Your name is now ${hideMyName ? 'hidden from' : 'visible to'} other users.`,
+          description: `Your name and photo are now ${hideProfile ? 'hidden from' : 'visible to'} other users.`,
       })
     }
-  }, [hideMyName, mounted, initialLoad, toast]);
+  }, [hideProfile, mounted, initialLoad, toast]);
 
-  useEffect(() => {
-    if (mounted && !initialLoad) {
-      const loggedInUserId = localStorage.getItem('loggedInUserId');
-      if (loggedInUserId) {
-        const storedUsersRaw = localStorage.getItem('all-users');
-        let allUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
-        allUsers = allUsers.map(user => 
-            user.id === loggedInUserId ? { ...user, displayPhotoHidden: hideMyPhoto } : user
-        );
-        localStorage.setItem('all-users', JSON.stringify(allUsers));
-      }
-
-      toast({
-          title: "Privacy Setting Updated",
-          description: `Your photo is now ${hideMyPhoto ? 'hidden from' : 'visible to'} other users.`,
-      })
-    }
-  }, [hideMyPhoto, mounted, initialLoad, toast]);
 
   return (
     <AppLayout pageTitle="Settings">
@@ -132,31 +112,15 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
-                    <Label htmlFor="name-privacy" className="text-base font-medium">Name Privacy</Label>
-                    <p className="text-sm text-muted-foreground">Hide my name in the Community tab.</p>
+                    <Label htmlFor="privacy-switch" className="text-base font-medium">Privacy</Label>
+                    <p className="text-sm text-muted-foreground">Hide my name & photo in the Community tab.</p>
                 </div>
                  {mounted ? (
                     <Switch
-                        id="name-privacy"
-                        checked={hideMyName}
-                        onCheckedChange={setHideMyName}
-                        aria-label="Toggle name visibility"
-                    />
-                ) : (
-                    <div className="w-11 h-6 bg-muted rounded-full animate-pulse" />
-                )}
-            </div>
-            <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                    <Label htmlFor="photo-privacy" className="text-base font-medium">Photo Privacy</Label>
-                    <p className="text-sm text-muted-foreground">Hide my photo in the Community tab.</p>
-                </div>
-                 {mounted ? (
-                    <Switch
-                        id="photo-privacy"
-                        checked={hideMyPhoto}
-                        onCheckedChange={setHideMyPhoto}
-                        aria-label="Toggle photo visibility"
+                        id="privacy-switch"
+                        checked={hideProfile}
+                        onCheckedChange={setHideProfile}
+                        aria-label="Toggle profile visibility"
                     />
                 ) : (
                     <div className="w-11 h-6 bg-muted rounded-full animate-pulse" />
