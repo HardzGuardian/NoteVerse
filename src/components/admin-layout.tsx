@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Book,
@@ -12,7 +12,6 @@ import {
   FileText,
   Megaphone,
   Users,
-  LogOut,
   User,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -40,6 +39,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { users } from "@/lib/data";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LogoutButton } from "./logout-button";
 
 type AdminLayoutProps = {
   children: React.ReactNode;
@@ -51,7 +51,6 @@ const adminUserId = 'usr1';
 
 export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
   const pathname = usePathname();
-  const router = useRouter();
   const [adminAvatar, setAdminAvatar] = useState("");
   const [adminFallback, setAdminFallback] = useState("");
   const [isMounted, setIsMounted] = useState(false);
@@ -83,13 +82,6 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
-
-  const handleLogout = () => {
-    // In a real app, you would sign out from your auth provider
-    // For this mock app, we just clear the loggedInUserId and redirect
-    localStorage.removeItem('loggedInUserId');
-    router.push('/');
-  };
 
   return (
     <SidebarProvider>
@@ -196,10 +188,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Logout</span>
-              </DropdownMenuItem>
+              <LogoutButton />
             </DropdownMenuContent>
           </DropdownMenu>
         </header>
