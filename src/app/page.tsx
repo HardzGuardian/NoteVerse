@@ -157,7 +157,7 @@ function LoginForm() {
 function LoginSkeleton() {
     return (
         <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${DEFAULT_BG}')` }}>
-             <div className="flex min-h-screen flex-col items-center justify-center p-4">
+             <div style={{ backgroundColor: 'rgba(0, 0, 0, 0)' }} className="flex min-h-screen flex-col items-center justify-center p-4 backdrop-blur-sm">
                  <Card className="w-full max-w-md shadow-2xl">
                      <CardHeader className="text-center">
                          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">

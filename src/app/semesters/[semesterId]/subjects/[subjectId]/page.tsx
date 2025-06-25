@@ -109,10 +109,7 @@ export default function PDFsPage() {
     const semester = allSemesters.find((s) => s.id === params.semesterId);
     const currentSubject = semester?.subjects.find((sub) => sub.id === params.subjectId);
     setSubject(currentSubject);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    setLoading(false);
   }, [params.semesterId, params.subjectId]);
   
   const handleDownload = (pdf: PDF) => {

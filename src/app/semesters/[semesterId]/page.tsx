@@ -22,10 +22,7 @@ export default function SubjectsPage() {
     const allSemesters = savedSemestersRaw ? JSON.parse(savedSemestersRaw) : initialSemesters;
     const foundSemester = allSemesters.find((s) => s.id === params.semesterId);
     setSemester(foundSemester);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    setLoading(false);
   }, [params.semesterId]);
 
   if (!semester && !loading) {
