@@ -99,7 +99,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="dashboard">
               <SidebarMenuButton asChild isActive={pathname === "/admin" || pathname === "/admin/home"}>
                 <Link href="/admin/home">
                   <LayoutDashboard />
@@ -107,7 +107,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="notes">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/semesters")}>
                 <Link href="/admin/semesters">
                   <BookCopy />
@@ -115,7 +115,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="users">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/users")}>
                 <Link href="/admin/users">
                   <Users />
@@ -123,7 +123,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="update">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/update-note")}>
                 <Link href="/admin/update-note">
                   <Megaphone />
@@ -131,7 +131,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="about">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/about")}>
                 <Link href="/admin/about">
                   <FileText />
@@ -139,7 +139,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
+             <SidebarMenuItem key="settings">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/admin/settings")}>
                 <Link href="/admin/settings">
                   <Settings />

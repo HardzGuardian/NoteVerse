@@ -105,7 +105,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="home">
               <SidebarMenuButton asChild isActive={pathname === "/home"}>
                 <Link href="/home">
                   <Home />
@@ -113,7 +113,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="notes">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/semesters")}>
                 <Link href="/semesters">
                   <Book />
@@ -121,7 +121,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
+             <SidebarMenuItem key="update">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/latest-update")}>
                 <Link href="/latest-update">
                   <Bell />
@@ -129,7 +129,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-             <SidebarMenuItem>
+             <SidebarMenuItem key="community">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/users")}>
                 <Link href="/users">
                   <Users />
@@ -137,7 +137,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-            <SidebarMenuItem>
+            <SidebarMenuItem key="about">
               <SidebarMenuButton asChild isActive={pathname.startsWith("/about")}>
                 <Link href="/about">
                   <Info />
