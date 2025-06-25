@@ -13,6 +13,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function UsersPage() {
   const [displayUsers, setDisplayUsers] = useState<User[]>([]);
   const [isMounted, setIsMounted] = useState(false);
+  const [showCommunityPhotos, setShowCommunityPhotos] = useState(false);
 
   useEffect(() => {
     const loadUsers = () => {
@@ -31,13 +32,16 @@ export default function UsersPage() {
         });
 
         setDisplayUsers(processedUsers);
+        
+        const savedHideCommunityPhotos = localStorage.getItem("setting-hideCommunityPhotos");
+        setShowCommunityPhotos(savedHideCommunityPhotos === 'false');
     };
 
     loadUsers();
     setIsMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
+        if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-') || event.key === 'setting-hideCommunityPhotos') {
             loadUsers();
         }
     };
@@ -106,7 +110,7 @@ export default function UsersPage() {
                     <div key={user.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="relative">
                         <Avatar className="h-12 w-12">
-                        <AvatarImage src={user.displayPhotoHidden ? '' : user.avatar} data-ai-hint="person avatar" />
+                        <AvatarImage src={user.displayPhotoHidden || !showCommunityPhotos ? '' : user.avatar} data-ai-hint="person avatar" />
                         <AvatarFallback>{getAvatarFallback(user)}</AvatarFallback>
                         </Avatar>
                         <span className={cn(

@@ -24,6 +24,7 @@ export default function SettingsPage() {
   const [mounted, setMounted] = useState(false);
   const [font, setFont] = useState('font-body');
   const [hideProfile, setHideProfile] = useState(true);
+  const [hideCommunityPhotos, setHideCommunityPhotos] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
 
   useEffect(() => {
@@ -39,6 +40,9 @@ export default function SettingsPage() {
             setHideProfile(currentUser.displayNameHidden);
         }
     }
+
+    const savedHideCommunityPhotos = localStorage.getItem("setting-hideCommunityPhotos");
+    setHideCommunityPhotos(savedHideCommunityPhotos !== 'false');
 
     setMounted(true);
     setInitialLoad(false);
@@ -72,6 +76,16 @@ export default function SettingsPage() {
       })
     }
   }, [hideProfile, mounted, initialLoad, toast]);
+  
+  useEffect(() => {
+    if (mounted && !initialLoad) {
+      localStorage.setItem("setting-hideCommunityPhotos", String(hideCommunityPhotos));
+      toast({
+          title: "Community Privacy Updated",
+          description: `Other users' photos are now ${hideCommunityPhotos ? 'hidden' : 'visible'}.`,
+      })
+    }
+  }, [hideCommunityPhotos, mounted, initialLoad, toast]);
 
 
   return (
@@ -112,7 +126,7 @@ export default function SettingsPage() {
             </div>
             <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
-                    <Label htmlFor="privacy-switch" className="text-base font-medium">Privacy</Label>
+                    <Label htmlFor="privacy-switch" className="text-base font-medium">My Privacy</Label>
                     <p className="text-sm text-muted-foreground">Hide my name & photo in the Community tab.</p>
                 </div>
                  {mounted ? (
@@ -121,6 +135,22 @@ export default function SettingsPage() {
                         checked={hideProfile}
                         onCheckedChange={setHideProfile}
                         aria-label="Toggle profile visibility"
+                    />
+                ) : (
+                    <div className="w-11 h-6 bg-muted rounded-full animate-pulse" />
+                )}
+            </div>
+             <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                    <Label htmlFor="community-photo-switch" className="text-base font-medium">Hide Community Photos</Label>
+                    <p className="text-sm text-muted-foreground">Hide profile pictures of other users in the Community tab.</p>
+                </div>
+                 {mounted ? (
+                    <Switch
+                        id="community-photo-switch"
+                        checked={hideCommunityPhotos}
+                        onCheckedChange={setHideCommunityPhotos}
+                        aria-label="Toggle visibility of other users' photos"
                     />
                 ) : (
                     <div className="w-11 h-6 bg-muted rounded-full animate-pulse" />
