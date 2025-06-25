@@ -22,6 +22,7 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [canChangeName, setCanChangeName] = useState(true);
+  const [canChangePhoto, setCanChangePhoto] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -37,6 +38,7 @@ export default function ProfilePage() {
     const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
     const savedEmail = localStorage.getItem(`user-email-${loggedInUserId}`);
     const savedCanChangeName = localStorage.getItem(`user-canChangeName-${loggedInUserId}`);
+    const savedCanChangePhoto = localStorage.getItem(`user-canChangePhoto-${loggedInUserId}`);
 
     setAvatar(savedAvatar || currentUser?.avatar || "https://placehold.co/128x128.png");
     setName(savedName || currentUser?.name || "User");
@@ -48,10 +50,24 @@ export default function ProfilePage() {
       setCanChangeName(currentUser.canChangeName);
     }
     
+    if (savedCanChangePhoto !== null) {
+      setCanChangePhoto(JSON.parse(savedCanChangePhoto));
+    } else if (currentUser) {
+      setCanChangePhoto(currentUser.canChangePhoto);
+    }
+
     setIsMounted(true);
   }, []);
 
   const handleChoosePhoto = () => {
+    if (!canChangePhoto) {
+        toast({
+            variant: "destructive",
+            title: "Permission Denied",
+            description: "An admin has disabled photo changes.",
+        });
+        return;
+    }
     fileInputRef.current?.click();
   };
 
@@ -170,7 +186,14 @@ export default function ProfilePage() {
                         className="hidden"
                         accept="image/*"
                     />
-                    <Button variant="outline" onClick={handleChoosePhoto}>Change Photo</Button>
+                    <div>
+                        <Button variant="outline" onClick={handleChoosePhoto} disabled={!canChangePhoto || isLoading}>Change Photo</Button>
+                        {!canChangePhoto && (
+                            <p className="text-xs text-muted-foreground pt-1">
+                                An admin has disabled photo changes.
+                            </p>
+                        )}
+                    </div>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -183,7 +206,7 @@ export default function ProfilePage() {
                         />
                         {!canChangeName && (
                             <p className="text-xs text-muted-foreground pt-1">
-                                Your name has been locked by an administrator.
+                                An admin has disabled name changes.
                             </p>
                         )}
                     </div>

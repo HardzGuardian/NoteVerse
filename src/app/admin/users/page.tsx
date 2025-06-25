@@ -28,10 +28,11 @@ export default function UserManagementPage() {
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
-  const [editedUserData, setEditedUserData] = useState<{ name: string; role: UserRole; canChangeName: boolean }>({
+  const [editedUserData, setEditedUserData] = useState<{ name: string; role: UserRole; canChangeName: boolean, canChangePhoto: boolean }>({
     name: '',
     role: 'Student',
     canChangeName: true,
+    canChangePhoto: true,
   });
 
   const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
@@ -49,10 +50,17 @@ export default function UserManagementPage() {
         const processedUsers = sourceUsers.map(user => {
             const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
             const storedName = localStorage.getItem(`user-name-${user.id}`);
+            const storedRole = localStorage.getItem(`user-role-${user.id}`);
+            const storedCanChangeName = localStorage.getItem(`user-canChangeName-${user.id}`);
+            const storedCanChangePhoto = localStorage.getItem(`user-canChangePhoto-${user.id}`);
+            
             return {
                 ...user,
                 name: storedName || user.name,
                 avatar: storedAvatar || user.avatar,
+                role: (storedRole as UserRole) || user.role,
+                canChangeName: storedCanChangeName !== null ? JSON.parse(storedCanChangeName) : user.canChangeName,
+                canChangePhoto: storedCanChangePhoto !== null ? JSON.parse(storedCanChangePhoto) : user.canChangePhoto,
             };
         });
         setUsers(processedUsers);
@@ -62,7 +70,7 @@ export default function UserManagementPage() {
     setIsMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
+        if (event.key === 'all-users' || event.key?.startsWith('user-')) {
             loadUsers();
         }
     };
@@ -79,12 +87,15 @@ export default function UserManagementPage() {
       name: user.name,
       role: user.role,
       canChangeName: user.canChangeName,
+      canChangePhoto: user.canChangePhoto,
     });
     setAvatarPreview(null);
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!userToEdit) return;
     const file = e.target.files?.[0];
+
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -111,12 +122,13 @@ export default function UserManagementPage() {
         ? { ...u, 
             name: editedUserData.name, 
             role: editedUserData.role,
-            canChangeName: editedUserData.canChangeName, 
+            canChangeName: editedUserData.canChangeName,
+            canChangePhoto: editedUserData.canChangePhoto,
             avatar: avatarPreview || u.avatar
           } 
         : u
     );
-    // Let the storage event handle the state update for consistency
+    
     localStorage.setItem('all-users', JSON.stringify(updatedUsers));
 
     if (avatarPreview) {
@@ -125,6 +137,7 @@ export default function UserManagementPage() {
     localStorage.setItem(`user-name-${userToEdit.id}`, editedUserData.name);
     localStorage.setItem(`user-role-${userToEdit.id}`, editedUserData.role);
     localStorage.setItem(`user-canChangeName-${userToEdit.id}`, JSON.stringify(editedUserData.canChangeName));
+    localStorage.setItem(`user-canChangePhoto-${userToEdit.id}`, JSON.stringify(editedUserData.canChangePhoto));
     
     toast({
       title: "User Updated",
@@ -164,6 +177,7 @@ export default function UserManagementPage() {
         status: 'offline',
         displayNameHidden: true,
         canChangeName: true,
+        canChangePhoto: true,
     };
     
     const updatedUsers = [...users, newUser];
@@ -389,6 +403,19 @@ export default function UserManagementPage() {
                 id="name-ban-switch"
                 checked={editedUserData.canChangeName}
                 onCheckedChange={(checked) => setEditedUserData({ ...editedUserData, canChangeName: checked })}
+              />
+            </div>
+            <div className="flex items-center justify-between rounded-lg border p-3.5">
+              <div>
+                <Label htmlFor="photo-ban-switch" className="font-medium">Allow Photo Change</Label>
+                <p className="text-sm text-muted-foreground">
+                  {editedUserData.canChangePhoto ? "User can edit their photo." : "User is banned from editing their photo."}
+                </p>
+              </div>
+              <Switch
+                id="photo-ban-switch"
+                checked={editedUserData.canChangePhoto}
+                onCheckedChange={(checked) => setEditedUserData({ ...editedUserData, canChangePhoto: checked })}
               />
             </div>
           </div>

@@ -141,7 +141,7 @@ function LoginForm() {
                                 </span>
                             </div>
                         </div>
-                        <Button asChild variant="secondary" className="w-full text-base py-6">
+ <Button asChild variant="secondary" className="w-full text-base py-6 hover:bg-accent hover:text-white">
                             <Link href="/admin/login">
                                 <Shield className="mr-2 h-5 w-5" />
                                 Login as Admin
