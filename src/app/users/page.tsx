@@ -106,7 +106,7 @@ export default function UsersPage() {
                     <div key={user.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="relative">
                         <Avatar className="h-12 w-12">
-                        <AvatarImage src={user.displayNameHidden ? '' : user.avatar} data-ai-hint="person avatar" />
+                        <AvatarImage src={user.displayPhotoHidden ? '' : user.avatar} data-ai-hint="person avatar" />
                         <AvatarFallback>{getAvatarFallback(user)}</AvatarFallback>
                         </Avatar>
                         <span className={cn(

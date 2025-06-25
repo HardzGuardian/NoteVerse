@@ -67,7 +67,9 @@ function LoginForm() {
               role: 'Student',
               status: 'online',
               displayNameHidden: true,
+              displayPhotoHidden: true,
               canChangeName: true,
+              canChangePhoto: true,
             };
             allUsers.push(appUser);
             localStorage.setItem('all-users', JSON.stringify(allUsers));
@@ -76,6 +78,7 @@ function LoginForm() {
             localStorage.setItem(`user-avatar-${newUserId}`, appUser.avatar);
             localStorage.setItem(`user-role-${newUserId}`, appUser.role);
             localStorage.setItem(`user-canChangeName-${newUserId}`, 'true');
+            localStorage.setItem(`user-canChangePhoto-${newUserId}`, 'true');
           }
 
           if (appUser && appUser.role === 'Admin') {

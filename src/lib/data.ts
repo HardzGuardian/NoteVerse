@@ -27,6 +27,7 @@ export type User = {
   role: 'Admin' | 'Student' | 'Uploader';
   status: 'online' | 'offline';
   displayNameHidden: boolean;
+  displayPhotoHidden: boolean;
   canChangeName: boolean;
   canChangePhoto: boolean;
 };
@@ -40,7 +41,7 @@ export type SocialLink = {
 };
 
 export const users: User[] = [
-  { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online', displayNameHidden: false, canChangeName: true, canChangePhoto: true },
+  { id: 'usr1', name: 'Sagar Salunkhe', avatar: 'https://placehold.co/100x100.png', email: 'sagarsalunkhe98@gmail.com', role: 'Admin', status: 'online', displayNameHidden: false, displayPhotoHidden: false, canChangeName: true, canChangePhoto: true },
 ];
 
 export const initialSemesters: Semester[] = [];

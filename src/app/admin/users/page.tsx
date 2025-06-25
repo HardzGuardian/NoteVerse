@@ -176,6 +176,7 @@ export default function UserManagementPage() {
         avatar: 'https://placehold.co/100x100.png',
         status: 'offline',
         displayNameHidden: true,
+        displayPhotoHidden: true,
         canChangeName: true,
         canChangePhoto: true,
     };
