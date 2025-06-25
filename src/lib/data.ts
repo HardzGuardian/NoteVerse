@@ -4,7 +4,7 @@ export type PDF = {
   title: string;
   fileId: string;
   createdAt: string;
-  category: 'Note' | 'Exam';
+  category: 'Note' | 'Exam' | 'Practical';
 };
 
 export type Subject = {

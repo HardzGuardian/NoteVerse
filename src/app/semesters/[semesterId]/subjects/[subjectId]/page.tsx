@@ -30,7 +30,7 @@ const PdfViewer = dynamic(() => import("@/components/pdf-viewer"), {
 type PDFTableProps = {
   pdfs: PDF[];
   onDownload: (pdf: PDF) => void;
-  type: 'Note' | 'Exam';
+  type: 'Note' | 'Exam' | 'Practical';
   onView: (pdf: PDF) => void;
 };
 
@@ -136,6 +136,7 @@ export default function PDFsPage() {
   
   const notes = subject?.pdfs.filter(pdf => pdf.category === 'Note') || [];
   const exams = subject?.pdfs.filter(pdf => pdf.category === 'Exam') || [];
+  const practicals = subject?.pdfs.filter(pdf => pdf.category === 'Practical') || [];
 
 
   return (
@@ -156,15 +157,19 @@ export default function PDFsPage() {
           </div>
         ) : (
            <Tabs defaultValue="notes">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
               <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
+              <TabsTrigger value="practicals">Practicals ({practicals.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="notes">
               <PDFTable pdfs={notes} onDownload={handleDownload} type="Note" onView={setPdfToView} />
             </TabsContent>
             <TabsContent value="exams">
               <PDFTable pdfs={exams} onDownload={handleDownload} type="Exam" onView={setPdfToView} />
+            </TabsContent>
+            <TabsContent value="practicals">
+              <PDFTable pdfs={practicals} onDownload={handleDownload} type="Practical" onView={setPdfToView} />
             </TabsContent>
           </Tabs>
         )}

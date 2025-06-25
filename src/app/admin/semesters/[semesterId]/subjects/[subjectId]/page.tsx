@@ -35,7 +35,7 @@ type PDFTableProps = {
   onRename: (pdf: PDF) => void;
   onDelete: (pdf: PDF) => void;
   onAdd: () => void;
-  type: 'Note' | 'Exam';
+  type: 'Note' | 'Exam' | 'Practical';
   onView: (pdf: PDF) => void;
 };
 
@@ -115,7 +115,7 @@ export default function AdminPDFsPage() {
   
   const [subject, setSubject] = useState<Subject | undefined>();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newPdfData, setNewPdfData] = useState({ title: "", fileId: "", category: "Note" as "Note" | "Exam" });
+  const [newPdfData, setNewPdfData] = useState({ title: "", fileId: "", category: "Note" as "Note" | "Exam" | "Practical" });
   
   const [pdfToEdit, setPdfToEdit] = useState<PDF | null>(null);
   const [editedPdfTitle, setEditedPdfTitle] = useState("");
@@ -252,9 +252,12 @@ export default function AdminPDFsPage() {
       updateSemestersInStorage(updatedSemesters);
       setSubject(prev => prev ? { ...prev, pdfs: [...prev.pdfs, newPdf] } : undefined);
       
-      const updateMessage = newPdfData.category === 'Note'
-        ? `New study material available! 📄 Check out the notes for "${newPdfData.title}" in the ${subject.name} subject.`
-        : `Get ready to practice! 📝 A new exam paper for "${newPdfData.title}" has been uploaded under ${subject.name}.`;
+      const updateMessage =
+        newPdfData.category === 'Note'
+          ? `New study material available! 📄 Check out the notes for "${newPdfData.title}" in the ${subject.name} subject.`
+          : newPdfData.category === 'Exam'
+          ? `Get ready to practice! 📝 A new exam paper for "${newPdfData.title}" has been uploaded under ${subject.name}.`
+          : `New practical material! 🔬 The file "${newPdfData.title}" has been added to ${subject.name}.`;
       setUpdateNote(updateMessage);
 
       toast({ title: "Success", description: `PDF "${newPdfData.title}" added.` });
@@ -279,6 +282,7 @@ export default function AdminPDFsPage() {
 
   const notes = subject?.pdfs.filter(pdf => pdf.category === 'Note') || [];
   const exams = subject?.pdfs.filter(pdf => pdf.category === 'Exam') || [];
+  const practicals = subject?.pdfs.filter(pdf => pdf.category === 'Practical') || [];
 
   return (
     <AdminLayout pageTitle={subject?.name || "Loading..."}>
@@ -301,15 +305,19 @@ export default function AdminPDFsPage() {
           </div>
         ) : (
           <Tabs defaultValue="notes">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="notes">Notes ({notes.length})</TabsTrigger>
               <TabsTrigger value="exams">Exams ({exams.length})</TabsTrigger>
+              <TabsTrigger value="practicals">Practicals ({practicals.length})</TabsTrigger>
             </TabsList>
             <TabsContent value="notes">
               <PDFTable pdfs={notes} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Note" onAdd={() => setIsAddDialogOpen(true)} onView={setPdfToView}/>
             </TabsContent>
             <TabsContent value="exams">
               <PDFTable pdfs={exams} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Exam" onAdd={() => setIsAddDialogOpen(true)} onView={setPdfToView}/>
+            </TabsContent>
+            <TabsContent value="practicals">
+              <PDFTable pdfs={practicals} onDownload={handleDownload} onRename={handleOpenEditDialog} onDelete={setPdfToDelete} type="Practical" onAdd={() => setIsAddDialogOpen(true)} onView={setPdfToView}/>
             </TabsContent>
           </Tabs>
         )}
@@ -347,7 +355,7 @@ export default function AdminPDFsPage() {
               <Label>Category</Label>
               <RadioGroup
                 value={newPdfData.category}
-                onValueChange={(value: "Note" | "Exam") => setNewPdfData({ ...newPdfData, category: value })}
+                onValueChange={(value: "Note" | "Exam" | "Practical") => setNewPdfData({ ...newPdfData, category: value })}
                 className="flex gap-4"
               >
                 <div className="flex items-center space-x-2">
@@ -357,6 +365,10 @@ export default function AdminPDFsPage() {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="Exam" id="r-exam" />
                   <Label htmlFor="r-exam">Exam</Label>
+                </div>
+                 <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="Practical" id="r-practical" />
+                  <Label htmlFor="r-practical">Practical</Label>
                 </div>
               </RadioGroup>
             </div>
