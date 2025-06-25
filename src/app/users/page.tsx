@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/app-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { User } from "@/lib/data";
+import { User, users as initialUsers } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { Users as UsersIcon } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,16 +18,20 @@ export default function UsersPage() {
   useEffect(() => {
     const loadUsers = () => {
         const storedUsersRaw = localStorage.getItem('all-users');
-        const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
+        const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : initialUsers;
 
         const processedUsers = sourceUsers.map(user => {
             const storedAvatar = localStorage.getItem(`user-avatar-${user.id}`);
             const storedName = localStorage.getItem(`user-name-${user.id}`);
+            const storedCanChangeName = localStorage.getItem(`user-canChangeName-${user.id}`);
+            const storedCanChangePhoto = localStorage.getItem(`user-canChangePhoto-${user.id}`);
             
             return { 
                 ...user,
                 name: storedName || user.name,
                 avatar: storedAvatar || user.avatar,
+                canChangeName: storedCanChangeName !== null ? JSON.parse(storedCanChangeName) : user.canChangeName,
+                canChangePhoto: storedCanChangePhoto !== null ? JSON.parse(storedCanChangePhoto) : user.canChangePhoto,
             };
         });
 
@@ -41,7 +45,7 @@ export default function UsersPage() {
     setIsMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
-        if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-') || event.key === 'setting-hideCommunityPhotos') {
+        if (event.key === 'all-users' || event.key?.startsWith('user-') || event.key === 'setting-hideCommunityPhotos') {
             loadUsers();
         }
     };
@@ -64,7 +68,7 @@ export default function UsersPage() {
   };
 
   const getDisplayName = (user: User) => {
-    if (user.displayNameHidden) {
+    if (!user.canChangeName || user.displayNameHidden) {
       const numericId = user.id.replace(/\D/g, "");
       return `${user.role} #${numericId.slice(-4)}`;
     }
@@ -72,7 +76,7 @@ export default function UsersPage() {
   };
 
   const getAvatarFallback = (user: User) => {
-    if (user.displayNameHidden) {
+    if (!user.canChangeName || user.displayNameHidden) {
       return user.role.charAt(0);
     }
     return (user.name || user.email).charAt(0);
@@ -110,7 +114,7 @@ export default function UsersPage() {
                     <div key={user.id} className="flex items-center gap-4 p-2 rounded-lg hover:bg-muted/50 transition-colors">
                     <div className="relative">
                         <Avatar className="h-12 w-12">
-                        <AvatarImage src={user.displayPhotoHidden || !showCommunityPhotos ? '' : user.avatar} data-ai-hint="person avatar" />
+                        <AvatarImage src={!user.canChangePhoto || user.displayPhotoHidden || !showCommunityPhotos ? '' : user.avatar} data-ai-hint="person avatar" />
                         <AvatarFallback>{getAvatarFallback(user)}</AvatarFallback>
                         </Avatar>
                         <span className={cn(
