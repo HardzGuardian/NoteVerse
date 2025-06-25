@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { users } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // In a real app, you'd get this from an auth context
 const adminUserId = 'usr1'; 
@@ -29,6 +30,7 @@ export default function AdminProfilePage() {
 
   const [isLoading, setIsLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     if (adminUser) {
@@ -39,6 +41,7 @@ export default function AdminProfilePage() {
       const savedName = localStorage.getItem(`user-name-${adminUser.id}`);
       setName(savedName || adminUser.name);
     }
+    setIsMounted(true);
   }, []);
 
   const handleChoosePhoto = () => {
@@ -113,6 +116,26 @@ export default function AdminProfilePage() {
       setIsLoading(false);
     }, 1000);
   };
+
+  if (!isMounted) {
+    return (
+        <AdminLayout pageTitle="My Profile">
+            <div className="flex justify-center">
+                <Card className="w-full max-w-2xl">
+                    <CardHeader>
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-4 w-72" />
+                    </CardHeader>
+                    <CardContent className="space-y-8">
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-48 w-full" />
+                        <Skeleton className="h-10 w-32" />
+                    </CardContent>
+                </Card>
+            </div>
+        </AdminLayout>
+    )
+  }
 
   return (
     <AdminLayout pageTitle="My Profile">

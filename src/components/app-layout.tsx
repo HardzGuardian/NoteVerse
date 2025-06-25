@@ -2,17 +2,17 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Book,
   Home,
-  PanelLeft,
   Settings,
   User,
   Info,
   Users,
   Bell,
+  LogOut,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -38,6 +38,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { users } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type AppLayoutProps = {
   children: React.ReactNode;
@@ -46,8 +47,10 @@ type AppLayoutProps = {
 
 export function AppLayout({ children, pageTitle }: AppLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [avatar, setAvatar] = useState("");
   const [userName, setUserName] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const updateAvatarAndName = () => {
@@ -55,6 +58,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
         if (!loggedInUserId) {
             setUserName("User");
             setAvatar("");
+            setIsMounted(true);
             return;
         }
 
@@ -68,6 +72,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
 
         setAvatar(avatarToSet);
         setUserName(nameToSet);
+        setIsMounted(true);
     };
 
     updateAvatarAndName();
@@ -87,6 +92,13 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
         window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  const handleLogout = () => {
+    // In a real app, you would sign out from your auth provider
+    // For this mock app, we just clear the loggedInUserId and redirect
+    localStorage.removeItem('loggedInUserId');
+    router.push('/');
+  };
 
   return (
     <SidebarProvider>
@@ -129,7 +141,7 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
               <SidebarMenuButton asChild isActive={pathname.startsWith("/users")}>
                 <Link href="/users">
                   <Users />
-                  Users
+                  Community
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -156,10 +168,14 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar>
-                  <AvatarImage src={avatar} alt="User" data-ai-hint="person avatar" />
-                  <AvatarFallback>{(userName?.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
-                </Avatar>
+                {isMounted ? (
+                    <Avatar>
+                        <AvatarImage src={avatar} alt="User" data-ai-hint="person avatar" />
+                        <AvatarFallback>{(userName?.charAt(0) || 'U').toUpperCase()}</AvatarFallback>
+                    </Avatar>
+                ) : (
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -178,8 +194,9 @@ export function AppLayout({ children, pageTitle }: AppLayoutProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/">Logout</Link>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

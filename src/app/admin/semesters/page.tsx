@@ -39,8 +39,8 @@ import { useToast } from "@/hooks/use-toast";
 import { PlusCircle, Book, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 export default function AdminSemestersPage() {
-  const [loading, setLoading] = useState(true);
   const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const { toast } = useToast();
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -54,10 +54,7 @@ export default function AdminSemestersPage() {
   useEffect(() => {
     const savedSemesters = localStorage.getItem('semesters');
     setSemesters(savedSemesters ? JSON.parse(savedSemesters) : []);
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
+    setIsMounted(true);
   }, []);
 
   const setUpdateNote = (message: string) => {
@@ -129,7 +126,7 @@ export default function AdminSemestersPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {loading
+        {!isMounted
           ? Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>

@@ -11,26 +11,30 @@ import { Semester } from "@/lib/data";
 import { Book, RefreshCw } from "lucide-react";
 
 export default function SemestersPage() {
-  const [loading, setLoading] = useState(true);
   const [semesters, setSemesters] = useState<Semester[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
 
   const loadData = () => {
-    setLoading(true);
+    setIsMounted(false);
     const savedSemesters = localStorage.getItem('semesters');
     setSemesters(savedSemesters ? JSON.parse(savedSemesters) : []);
-    setTimeout(() => setLoading(false), 1000);
+    setIsMounted(true);
   }
 
   useEffect(() => {
     loadData();
     
-    // Listen for changes from other tabs
-    window.addEventListener('storage', (e) => {
+    const handleStorageChange = (e: StorageEvent) => {
         if(e.key === 'semesters') {
             loadData();
         }
-    });
+    };
 
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+        window.removeEventListener('storage', handleStorageChange);
+    };
   }, []);
 
   return (
@@ -41,12 +45,12 @@ export default function SemestersPage() {
           <p className="text-muted-foreground">Select a semester to view its subjects, notes, and exam papers.</p>
         </div>
         <div className="flex gap-2">
-            <Button variant="outline" onClick={loadData}><RefreshCw className="mr-2 h-4 w-4"/> Refresh</Button>
+            <Button variant="outline" onClick={loadData} disabled={!isMounted}><RefreshCw className="mr-2 h-4 w-4"/> Refresh</Button>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {loading
+        {!isMounted
           ? Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardHeader>
@@ -78,5 +82,3 @@ export default function SemestersPage() {
     </AppLayout>
   );
 }
-
-    

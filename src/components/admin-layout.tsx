@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import {
   Book,
@@ -39,6 +39,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./theme-toggle";
 import { users } from "@/lib/data";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type AdminLayoutProps = {
   children: React.ReactNode;
@@ -50,8 +51,10 @@ const adminUserId = 'usr1';
 
 export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
   const pathname = usePathname();
+  const router = useRouter();
   const [adminAvatar, setAdminAvatar] = useState("");
   const [adminFallback, setAdminFallback] = useState("");
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const updateAdminDetails = () => {
@@ -67,6 +70,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
     };
 
     updateAdminDetails();
+    setIsMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === `user-avatar-${adminUserId}` || event.key === `user-name-${adminUserId}`) {
@@ -79,6 +83,13 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, []);
+
+  const handleLogout = () => {
+    // In a real app, you would sign out from your auth provider
+    // For this mock app, we just clear the loggedInUserId and redirect
+    localStorage.removeItem('loggedInUserId');
+    router.push('/');
+  };
 
   return (
     <SidebarProvider>
@@ -98,7 +109,7 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton asChild isActive={pathname === "/admin" || pathname === "/admin/home"}>
-                <Link href="/admin">
+                <Link href="/admin/home">
                   <LayoutDashboard />
                   Dashboard
                 </Link>
@@ -117,14 +128,6 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 <Link href="/admin/users">
                   <Users />
                   User Management
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild isActive={pathname === "/admin/users/add"}>
-                <Link href="/admin/users/add">
-                  <User />
-                  Add User
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -167,10 +170,14 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar>
-                  <AvatarImage src={adminAvatar} alt="Admin User" data-ai-hint="person avatar" />
-                  <AvatarFallback>{adminFallback}</AvatarFallback>
-                </Avatar>
+                {isMounted ? (
+                    <Avatar>
+                        <AvatarImage src={adminAvatar} alt="Admin User" data-ai-hint="person avatar" />
+                        <AvatarFallback>{adminFallback}</AvatarFallback>
+                    </Avatar>
+                ) : (
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                )}
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
@@ -189,11 +196,9 @@ export function AdminLayout({ children, pageTitle }: AdminLayoutProps) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link href="/">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </Link>
+              <DropdownMenuItem onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

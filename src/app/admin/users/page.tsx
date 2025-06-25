@@ -18,11 +18,13 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type UserRole = "Admin" | "Student" | "Uploader";
 
 export default function UserManagementPage() {
   const [users, setUsers] = useState<User[]>([]);
+  const [isMounted, setIsMounted] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
   
   const [userToEdit, setUserToEdit] = useState<User | null>(null);
@@ -57,6 +59,7 @@ export default function UserManagementPage() {
     };
 
     loadUsers();
+    setIsMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
@@ -113,7 +116,7 @@ export default function UserManagementPage() {
           } 
         : u
     );
-    // Don't setUsers directly, let the storage event handle it for consistency
+    // Let the storage event handle the state update for consistency
     localStorage.setItem('all-users', JSON.stringify(updatedUsers));
 
     if (avatarPreview) {
@@ -206,45 +209,61 @@ export default function UserManagementPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <Avatar>
-                        <AvatarImage src={user.avatar} data-ai-hint="person avatar" />
-                        <AvatarFallback>{(user.name || user.email).charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{user.name || user.email.split('@')[0]}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground">{user.email}</TableCell>
-                  <TableCell>
-                    <Badge variant={roleVariant(user.role)}>{user.role}</Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreHorizontal className="h-4 w-4" />
-                          <span className="sr-only">User Actions</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                         <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleOpenEditDialog(user)}>
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit User
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setUserToDelete(user)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </TableCell>
-                </TableRow>
-              ))}
+              {!isMounted ? (
+                 Array.from({ length: 3 }).map((_, i) => (
+                    <TableRow key={i}>
+                        <TableCell>
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="h-10 w-10 rounded-full" />
+                                <Skeleton className="h-4 w-24" />
+                            </div>
+                        </TableCell>
+                        <TableCell><Skeleton className="h-4 w-40" /></TableCell>
+                        <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                        <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto" /></TableCell>
+                    </TableRow>
+                 ))
+              ) : (
+                users.map((user) => (
+                    <TableRow key={user.id}>
+                    <TableCell>
+                        <div className="flex items-center gap-3">
+                        <Avatar>
+                            <AvatarImage src={user.avatar} data-ai-hint="person avatar" />
+                            <AvatarFallback>{(user.name || user.email).charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{user.name || user.email.split('@')[0]}</span>
+                        </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                    <TableCell>
+                        <Badge variant={roleVariant(user.role)}>{user.role}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="h-4 w-4" />
+                            <span className="sr-only">User Actions</span>
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleOpenEditDialog(user)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit User
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setUserToDelete(user)} className="text-destructive focus:bg-destructive/10 focus:text-destructive">
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
+                    </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

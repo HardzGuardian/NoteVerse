@@ -12,11 +12,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function UsersPage() {
   const [displayUsers, setDisplayUsers] = useState<User[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     const loadUsers = () => {
-        setIsLoading(true);
         const storedUsersRaw = localStorage.getItem('all-users');
         const sourceUsers: User[] = storedUsersRaw ? JSON.parse(storedUsersRaw) : [];
 
@@ -32,10 +31,10 @@ export default function UsersPage() {
         });
 
         setDisplayUsers(processedUsers);
-        setIsLoading(false);
     };
 
     loadUsers();
+    setIsMounted(true);
 
     const handleStorageChange = (event: StorageEvent) => {
         if (event.key === 'all-users' || event.key?.startsWith('user-avatar-') || event.key?.startsWith('user-name-')) {
@@ -86,13 +85,13 @@ export default function UsersPage() {
               </div>
               <div>
                 <CardTitle className="font-headline text-3xl">Community</CardTitle>
-                <CardDescription>See who's currently online.</CardDescription>
+                <CardDescription>See who's part of the community.</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {isLoading ? (
+              {!isMounted ? (
                   Array.from({ length: 4 }).map((_, i) => (
                     <div key={i} className="flex items-center gap-4 p-2">
                         <Skeleton className="h-12 w-12 rounded-full" />

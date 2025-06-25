@@ -11,29 +11,19 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from 'next/navigation';
 import { Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const DEFAULT_BG = "https://placehold.co/1920x1080.png";
 
-export default function AdminLoginPage() {
+function AdminLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loginAttempts, setLoginAttempts] = useState(0);
   const router = useRouter();
   const { toast } = useToast();
   const [background, setBackground] = useState(DEFAULT_BG);
   const [overlayOpacity, setOverlayOpacity] = useState(50);
-
+  
   useEffect(() => {
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "login-background-image" && e.newValue) {
-        setBackground(e.newValue);
-      }
-      if (e.key === "login-overlay-opacity" && e.newValue) {
-        setOverlayOpacity(Number(e.newValue));
-      }
-    };
-    
-    // Set initial values from localStorage
     const savedBg = localStorage.getItem("login-background-image");
     if (savedBg) {
       setBackground(savedBg);
@@ -42,21 +32,12 @@ export default function AdminLoginPage() {
     if (savedOpacity) {
       setOverlayOpacity(Number(savedOpacity));
     }
-
-    // Listen for changes from other tabs
-    window.addEventListener('storage', handleStorageChange);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
   }, []);
 
   const handleLogin = () => {
-    // This is a mock login. In a real app, you'd validate against a database.
     if (email === "sagarsalunkhe98@gmail.com" && password === "Hardz@1998") {
-      router.push("/admin");
+      router.push("/admin/home");
     } else {
-      setLoginAttempts((prev) => prev + 1);
       toast({
         variant: "destructive",
         title: "Login Failed",
@@ -92,17 +73,7 @@ export default function AdminLoginPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <div className="flex items-center">
-                    <Label htmlFor="password">Password</Label>
-                    {loginAttempts >= 2 && (
-                      <Link
-                        href="/forgot-password"
-                        className="ml-auto inline-block text-sm underline text-primary font-medium"
-                      >
-                        Forgot password?
-                      </Link>
-                    )}
-                  </div>
+                  <Label htmlFor="password">Password</Label>
                   <Input 
                     id="password" 
                     type="password" 
@@ -129,4 +100,57 @@ export default function AdminLoginPage() {
       </div>
     </div>
   );
+}
+
+function AdminLoginSkeleton() {
+    return (
+        <div className="min-h-screen bg-cover bg-center" style={{ backgroundImage: `url('${DEFAULT_BG}')` }}>
+             <div className="flex min-h-screen flex-col items-center justify-center p-4">
+                <Card className="w-full max-w-md shadow-2xl">
+                    <CardHeader className="text-center">
+                        <div className="mb-4 flex justify-center">
+                            <div className="bg-primary text-primary-foreground rounded-full p-3">
+                                <Shield className="h-8 w-8" />
+                            </div>
+                        </div>
+                        <CardTitle className="font-headline text-4xl">Admin Panel</CardTitle>
+                        <CardDescription>Please log in with your admin credentials.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label htmlFor="email-skeleton">Email</Label>
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="password-skeleton">Password</Label>
+                                <Skeleton className="h-10 w-full" />
+                            </div>
+                            <div className="pt-2">
+                               <Skeleton className="h-10 w-full" />
+                            </div>
+                        </div>
+                        <div className="mt-4 text-center text-sm">
+                            Not an admin?{" "}
+                            <Skeleton className="inline-block h-4 w-32" />
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
+        </div>
+    );
+}
+
+export default function AdminLoginPageContainer() {
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) {
+        return <AdminLoginSkeleton />;
+    }
+
+    return <AdminLoginForm />;
 }
