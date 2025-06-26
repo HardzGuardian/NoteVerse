@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { users } from "@/lib/data";
 import { Loader2 } from "lucide-react";
+import { get } from "@vercel/blob";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ProfilePage() {
@@ -26,17 +27,22 @@ export default function ProfilePage() {
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    const loggedInUserId = localStorage.getItem('loggedInUserId');
+    const loggedInUserId = localStorage.getItem("loggedInUserId");
     if (!loggedInUserId) {
       setIsMounted(true);
       return;
-    };
+    }
 
-    const currentUser = users.find(u => u.id === loggedInUserId);
+    const fetchUserData = async () => {
+      try {
+        const blob = await get(`users/${loggedInUserId}/profile.json`, {
+          cacheControlMaxAge: 0,
+        });
+        const userData = await blob.json();
 
-    const savedAvatar = localStorage.getItem(`user-avatar-${loggedInUserId}`);
-    const savedName = localStorage.getItem(`user-name-${loggedInUserId}`);
-    const savedEmail = localStorage.getItem(`user-email-${loggedInUserId}`);
+        setName(userData.name || "User");
+        setAvatar(userData.avatar || "https://placehold.co/128x128.png");
+        setEmail(userData.email || "");
     const savedCanChangeName = localStorage.getItem(`user-canChangeName-${loggedInUserId}`);
     const savedCanChangePhoto = localStorage.getItem(`user-canChangePhoto-${loggedInUserId}`);
 
@@ -56,9 +62,22 @@ export default function ProfilePage() {
       setCanChangePhoto(currentUser.canChangePhoto);
     }
 
-    setIsMounted(true);
-  }, []);
+        // If user data is not in blob storage, fallback to local storage or default data
+        if (!userData) {
+          const currentUser = users.find((u) => u.id === loggedInUserId);
+          setName(currentUser?.name || "User");
+          setAvatar(currentUser?.avatar || "https://placehold.co/128x128.png");
+          setEmail(currentUser?.email || "");
+        }
+      } catch (error) {
+        console.error("Error fetching user data from Vercel Blob:", error);
+      } finally {
+        setIsMounted(true);
+      }
+    };
 
+    fetchUserData();
+  }, []);
   const handleChoosePhoto = () => {
     if (!canChangePhoto) {
         toast({
@@ -82,32 +101,38 @@ export default function ProfilePage() {
     }
   };
 
-  const handleSaveChanges = () => {
-    const loggedInUserId = localStorage.getItem('loggedInUserId');
+  const handleSaveChanges = async () => {
+    const loggedInUserId = localStorage.getItem("loggedInUserId");
     if (!loggedInUserId) return;
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
       let photoUpdated = false;
       let nameUpdated = false;
 
-      const originalName = localStorage.getItem(`user-name-${loggedInUserId}`) || "";
+      const originalName = (await get(`users/${loggedInUserId}/profile.json`).then(blob => blob.json()).catch(() => ({}))).name || "";
       if (name !== originalName) {
-        localStorage.setItem(`user-name-${loggedInUserId}`, name);
         nameUpdated = true;
       }
 
       if (avatarPreview) {
-        localStorage.setItem(`user-avatar-${loggedInUserId}`, avatarPreview);
         setAvatar(avatarPreview);
         setAvatarPreview(null);
         photoUpdated = true;
       }
-      
+
       const changes = [
         nameUpdated ? "name" : null,
         photoUpdated ? "photo" : null,
       ].filter(Boolean) as string[];
+
+      if (changes.length > 0) {
+        const userData = { name, avatar: avatarPreview || avatar, email };
+        await put(`users/${loggedInUserId}/profile.json`, JSON.stringify(userData), {
+          access: "public",
+          contentType: "application/json",
+        });
+
 
       if (changes.length > 0) {
         let description = "Your " + changes.join(', ').replace(/, ([^,]*)$/, ' and $1') + ` has${changes.length > 1 ? 've' : ''} been updated.`;
@@ -115,15 +140,9 @@ export default function ProfilePage() {
           title: "Profile Updated",
           description: description,
         });
-      } else {
-         toast({
-          title: "No Changes",
-          description: "You haven't made any changes to your profile.",
-        });
       }
-
       setIsLoading(false);
-    }, 1000);
+    }
   };
   
   if (!isMounted) {

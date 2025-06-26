@@ -13,6 +13,7 @@ import { users } from "@/lib/data";
 import { Separator } from "@/components/ui/separator";
 import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { put } from '@vercel/blob';
 
 // In a real app, you'd get this from an auth context
 const adminUserId = 'usr1'; 
@@ -64,7 +65,7 @@ export default function AdminProfilePage() {
     setIsLoading(true);
 
     // Simulate saving changes
-    setTimeout(() => {
+    const saveChanges = async () => {
       let changesMade = false;
       let toastDescription = "Your details have been updated.";
 
@@ -88,17 +89,27 @@ export default function AdminProfilePage() {
         changesMade = true;
       }
       
-      const originalName = localStorage.getItem(`user-name-${adminUser.id}`) || adminUser.name;
-      if (name !== originalName) {
-        localStorage.setItem(`user-name-${adminUser.id}`, name);
-        changesMade = true;
-      }
+      try {
+        if (name !== (localStorage.getItem(`user-name-${adminUser.id}`) || adminUser.name)) {
+          // Upload updated name to Vercel Blob
+          await put(`users/${adminUser.id}/name.txt`, name, { access: 'public' });
+          localStorage.setItem(`user-name-${adminUser.id}`, name); // Still keep in local storage for immediate feedback
+          changesMade = true;
+        }
 
-      if (avatarPreview) {
-        localStorage.setItem(`user-avatar-${adminUser.id}`, avatarPreview);
-        setAvatar(avatarPreview);
-        setAvatarPreview(null);
-        changesMade = true;
+        if (avatarPreview) {
+          // Upload updated avatar to Vercel Blob
+          const blob = await fetch(avatarPreview).then(res => res.blob());
+          await put(`users/${adminUser.id}/avatar.png`, blob, { access: 'public' });
+          localStorage.setItem(`user-avatar-${adminUser.id}`, avatarPreview); // Still keep in local storage for immediate feedback
+          setAvatar(avatarPreview);
+          setAvatarPreview(null);
+          changesMade = true;
+        }
+      } catch (error) {
+        console.error("Failed to save changes to Vercel Blob:", error);
+        toast({ variant: "destructive", title: "Error", description: "Failed to save changes." });
+        setIsLoading(false);
       }
       
       if (changesMade) {
@@ -114,7 +125,8 @@ export default function AdminProfilePage() {
       }
 
       setIsLoading(false);
-    }, 1000);
+    };
+    saveChanges();
   };
 
   if (!isMounted) {
