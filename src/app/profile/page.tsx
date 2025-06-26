@@ -43,19 +43,6 @@ export default function ProfilePage() {
         setName(userData.name || "User");
         setAvatar(userData.avatar || "https://placehold.co/128x128.png");
         setEmail(userData.email || "");
-    const savedCanChangeName = localStorage.getItem(`user-canChangeName-${loggedInUserId}`);
-    const savedCanChangePhoto = localStorage.getItem(`user-canChangePhoto-${loggedInUserId}`);
-
-    setAvatar(savedAvatar || currentUser?.avatar || "https://placehold.co/128x128.png");
-    setName(savedName || currentUser?.name || "User");
-    setEmail(savedEmail || currentUser?.email || "");
-
-    if (savedCanChangeName !== null) {
-      setCanChangeName(JSON.parse(savedCanChangeName));
-    } else if (currentUser) {
-      setCanChangeName(currentUser.canChangeName);
-    }
-    
     if (savedCanChangePhoto !== null) {
       setCanChangePhoto(JSON.parse(savedCanChangePhoto));
     } else if (currentUser) {
@@ -132,8 +119,7 @@ export default function ProfilePage() {
           access: "public",
           contentType: "application/json",
         });
-
-
+      }
       if (changes.length > 0) {
         let description = "Your " + changes.join(', ').replace(/, ([^,]*)$/, ' and $1') + ` has${changes.length > 1 ? 've' : ''} been updated.`;
         toast({
